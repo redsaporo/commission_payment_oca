@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!-- ============================================================ -->
+    <!-- SETTLEMENT LIST: Payment columns                             -->
+    <!-- ============================================================ -->
+    <record model="ir.ui.view" id="view_settlement_tree_payment">
+        <field name="name">Settlements list - Payment tracking</field>
+        <field name="model">commission.settlement</field>
+        <field name="inherit_id" ref="commission_oca.view_settlement_tree" />
+        <field name="priority">20</field>
+        <field name="arch" type="xml">
+            <list position="attributes">
+                <attribute name="decoration-success">state == 'paid'</attribute>
+            </list>
+            <field name="total" position="after">
+                <field name="amount_paid" string="Paid" optional="show"
+                    widget="monetary" options="{'currency_field': 'currency_id'}"
+                    decoration-success="amount_paid > 0" />
+                <field name="amount_residual" string="Pending" optional="show"
+                    widget="monetary" options="{'currency_field': 'currency_id'}"
+                    decoration-danger="amount_residual > 0"
+                    decoration-success="amount_residual == 0" />
+                <field name="payment_date" optional="show" />
+                <field name="payment_ref" optional="hide" />
+            </field>
+        </field>
+    </record>
+
+    <!-- ============================================================ -->
+    <!-- SETTLEMENT FORM: Buttons + payment info + payment records    -->
+    <!-- ============================================================ -->
+    <record model="ir.ui.view" id="view_settlement_form_payment">
+        <field name="name">Settlements form - Payment tracking</field>
+        <field name="model">commission.settlement</field>
+        <field name="inherit_id" ref="commission_oca.view_settlement_form" />
+        <field name="priority">20</field>
+        <field name="arch" type="xml">
+            <button name="action_cancel" position="before">
+                <button string="Register Payment"
+                    invisible="state not in ('settled', 'invoiced')"
+                    type="object" name="action_register_payment"
+                    class="oe_highlight"
+                    groups="commission_oca.group_commission_manager"
+                    icon="fa-money" />
+                <button string="Revert Payment"
+                    invisible="state != 'paid'"
+                    type="object" name="action_revert_to_settled"
+                    confirm="This will delete all payment records. Continue?"
+                    groups="commission_oca.group_commission_manager" />
+            </button>
+            <field name="can_edit" position="before">
+                <div class="oe_button_box" name="button_box">
+                    <button name="action_view_payment_lines" type="object"
+                        class="oe_stat_button" icon="fa-money"
+                        invisible="payment_count == 0">
+                        <field name="payment_count" widget="statinfo" string="Payments" />
+                    </button>
+                </div>
+            </field>
+            <xpath expr="//group[field[@name='total']]" position="after">
+                <group string="Payment Tracking"
+                    invisible="payment_count == 0 and state != 'paid'">
+                    <group>
+                        <field name="amount_paid" widget="monetary"
+                            options="{'currency_field': 'currency_id'}" />
+                        <field name="amount_residual" widget="monetary"
+                            options="{'currency_field': 'currency_id'}"
+                            decoration-danger="amount_residual > 0"
+                            decoration-success="amount_residual == 0" />
+                    </group>
+                    <group>
+                        <field name="payment_date" />
+                        <field name="payment_ref" />
+                    </group>
+                </group>
+                <group string="Payment Records" invisible="payment_count == 0"
+                    colspan="4">
+                    <field name="payment_line_ids" nolabel="1" colspan="2">
+                        <list create="false" delete="false">
+                            <field name="date" />
+                            <field name="amount" widget="monetary"
+                                options="{'currency_field': 'currency_id'}" />
+                            <field name="reference" />
+                            <field name="source_invoice_names" string="Source Invoices" />
+                            <field name="source_partner_names" string="Customers" />
+                            <field name="notes" optional="hide" />
+                            <field name="currency_id" column_invisible="1" />
+                            <button name="action_view_source_invoices" type="object"
+                                string="View Invoices" icon="fa-external-link"
+                                class="oe_link" />
+                        </list>
+                    </field>
+                </group>
+                <group invisible="not payment_notes">
+                    <field name="payment_notes" />
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ============================================================ -->
+    <!-- SETTLEMENT SEARCH: Payment filters                           -->
+    <!-- ============================================================ -->
+    <record id="view_settlement_search_payment" model="ir.ui.view">
+        <field name="name">commission.settlement.search - Payment</field>
+        <field name="model">commission.settlement</field>
+        <field name="inherit_id" ref="commission_oca.view_settlement_search" />
+        <field name="priority">20</field>
+        <field name="arch" type="xml">
+            <field name="date_to" position="after">
+                <field name="payment_ref" />
+                <field name="payment_date" />
+            </field>
+            <separator position="before">
+                <filter string="Paid" name="filter_paid"
+                    domain="[('state', '=', 'paid')]" />
+                <filter string="Pending Payment" name="filter_pending"
+                    domain="[('state', 'in', ('settled', 'invoiced')), ('amount_residual', '>', 0)]" />
+                <filter string="Partially Paid" name="filter_partial"
+                    domain="[('amount_paid', '>', 0), ('amount_residual', '>', 0)]" />
+                <separator />
+            </separator>
+            <xpath expr="//group/filter[@name='group_date']" position="after">
+                <filter string="Payment Date" name="group_payment_date"
+                    context="{'group_by': 'payment_date:month'}" />
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ============================================================ -->
+    <!-- PAYMENT RECORDS: List / Form / Search                        -->
+    <!-- ============================================================ -->
+    <record model="ir.ui.view" id="view_settlement_payment_tree">
+        <field name="name">commission.settlement.payment.list</field>
+        <field name="model">commission.settlement.payment</field>
+        <field name="arch" type="xml">
+            <list create="false">
+                <field name="date" />
+                <field name="agent_id" />
+                <field name="settlement_id" />
+                <field name="date_from" string="Period From" optional="show" />
+                <field name="date_to" string="Period To" optional="show" />
+                <field name="amount" widget="monetary"
+                    options="{'currency_field': 'currency_id'}" sum="Total Paid" />
+                <field name="settlement_total" string="Commission Total" widget="monetary"
+                    options="{'currency_field': 'currency_id'}" optional="show" />
+                <field name="reference" />
+                <field name="source_invoice_names" string="Source Invoices" />
+                <field name="source_partner_names" string="Customers" />
+                <field name="notes" optional="hide" />
+                <field name="currency_id" column_invisible="1" />
+                <button name="action_view_source_invoices" type="object"
+                    string="" icon="fa-external-link" class="oe_link" />
+            </list>
+        </field>
+    </record>
+    <record model="ir.ui.view" id="view_settlement_payment_form">
+        <field name="name">commission.settlement.payment.form</field>
+        <field name="model">commission.settlement.payment</field>
+        <field name="arch" type="xml">
+            <form string="Payment Record" create="false" edit="false">
+                <group>
+                    <group>
+                        <field name="settlement_id" />
+                        <field name="agent_id" />
+                        <field name="date" />
+                        <field name="amount" widget="monetary"
+                            options="{'currency_field': 'currency_id'}" />
+                        <field name="reference" />
+                        <field name="currency_id" invisible="1" />
+                    </group>
+                    <group>
+                        <field name="date_from" />
+                        <field name="date_to" />
+                        <field name="settlement_total" widget="monetary"
+                            options="{'currency_field': 'currency_id'}" />
+                        <field name="source_invoice_names" />
+                        <field name="source_partner_names" />
+                    </group>
+                </group>
+                <group>
+                    <field name="notes" />
+                </group>
+                <group string="Source Invoices">
+                    <field name="source_invoice_ids" nolabel="1">
+                        <list create="false" delete="false">
+                            <field name="name" />
+                            <field name="partner_id" />
+                            <field name="invoice_date" />
+                            <field name="amount_total" />
+                            <field name="state" widget="badge" />
+                        </list>
+                    </field>
+                </group>
+            </form>
+        </field>
+    </record>
+    <record model="ir.ui.view" id="view_settlement_payment_search">
+        <field name="name">commission.settlement.payment.search</field>
+        <field name="model">commission.settlement.payment</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="agent_id" />
+                <field name="reference" />
+                <field name="date" />
+                <field name="source_partner_names" string="Customer" />
+                <field name="source_invoice_names" string="Invoice" />
+                <group expand="1" string="Group By">
+                    <filter string="Agent" name="group_agent"
+                        context="{'group_by': 'agent_id'}" />
+                    <filter string="Month" name="group_month"
+                        context="{'group_by': 'date:month'}" />
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ============================================================ -->
+    <!-- SETTLEMENT PIVOT + GRAPH                                     -->
+    <!-- ============================================================ -->
+    <record id="view_settlement_pivot_payment" model="ir.ui.view">
+        <field name="name">commission.settlement.pivot.payment</field>
+        <field name="model">commission.settlement</field>
+        <field name="arch" type="xml">
+            <pivot string="Commissions: Settled vs Paid" sample="1">
+                <field name="agent_id" type="row" />
+                <field name="state" type="col" />
+                <field name="total" type="measure" />
+                <field name="amount_paid" type="measure" />
+                <field name="amount_residual" type="measure" />
+            </pivot>
+        </field>
+    </record>
+    <record id="view_settlement_graph_payment" model="ir.ui.view">
+        <field name="name">commission.settlement.graph.payment</field>
+        <field name="model">commission.settlement</field>
+        <field name="arch" type="xml">
+            <graph string="Commissions by Agent" type="bar" sample="1">
+                <field name="agent_id" />
+                <field name="total" type="measure" />
+                <field name="amount_paid" type="measure" />
+                <field name="amount_residual" type="measure" />
+            </graph>
+        </field>
+    </record>
+
+    <!-- ============================================================ -->
+    <!-- ACTIONS                                                      -->
+    <!-- ============================================================ -->
+    <record model="ir.actions.act_window" id="action_paid_settlements">
+        <field name="name">Paid Commissions</field>
+        <field name="res_model">commission.settlement</field>
+        <field name="view_mode">list,form,pivot,graph</field>
+        <field name="domain">[('state', '=', 'paid')]</field>
+        <field name="context">{'search_default_group_agent': 1}</field>
+    </record>
+    <record model="ir.actions.act_window" id="action_pending_settlements">
+        <field name="name">Pending Payment</field>
+        <field name="res_model">commission.settlement</field>
+        <field name="view_mode">list,form,pivot,graph</field>
+        <field name="domain">[('state', 'in', ('settled', 'invoiced')), ('amount_residual', '>', 0)]</field>
+        <field name="context">{'search_default_group_agent': 1}</field>
+    </record>
+    <record model="ir.actions.act_window" id="action_all_payment_records">
+        <field name="name">Payment Records</field>
+        <field name="res_model">commission.settlement.payment</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_group_agent': 1}</field>
+    </record>
+
+    <!-- ============================================================ -->
+    <!-- MENUS                                                        -->
+    <!-- ============================================================ -->
+    <menuitem id="menu_paid_settlements" name="Paid Commissions"
+        parent="commission_oca.menu_settlement_parent"
+        action="action_paid_settlements" sequence="20" />
+    <menuitem id="menu_pending_settlements" name="Pending Payment"
+        parent="commission_oca.menu_settlement_parent"
+        action="action_pending_settlements" sequence="30" />
+    <menuitem id="menu_payment_records" name="Payment Records"
+        parent="commission_oca.menu_settlement_parent"
+        action="action_all_payment_records" sequence="40" />
+
+    <!-- ============================================================ -->
+    <!-- SERVER ACTION: Bulk register payment from list               -->
+    <!-- ============================================================ -->
+    <record id="action_register_payment_multi" model="ir.actions.server">
+        <field name="name">Register Payment</field>
+        <field name="model_id" ref="commission_oca.model_commission_settlement" />
+        <field name="binding_model_id" ref="commission_oca.model_commission_settlement" />
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">
+if records:
+    action = records.action_register_payment()
+        </field>
+    </record>
+</odoo>

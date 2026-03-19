@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!-- ============================================================ -->
+    <!-- PAYMENT RECORDS: Pivot by agent                              -->
+    <!-- ============================================================ -->
+    <record id="view_payment_pivot_by_agent" model="ir.ui.view">
+        <field name="name">commission.settlement.payment.pivot</field>
+        <field name="model">commission.settlement.payment</field>
+        <field name="arch" type="xml">
+            <pivot string="Payment Analysis by Agent" sample="1">
+                <field name="agent_id" type="row" />
+                <field name="date" type="col" interval="month" />
+                <field name="amount" type="measure" />
+            </pivot>
+        </field>
+    </record>
+
+    <!-- ============================================================ -->
+    <!-- PAYMENT RECORDS: Graph by agent (bar)                        -->
+    <!-- ============================================================ -->
+    <record id="view_payment_graph_by_agent" model="ir.ui.view">
+        <field name="name">commission.settlement.payment.graph.bar</field>
+        <field name="model">commission.settlement.payment</field>
+        <field name="arch" type="xml">
+            <graph string="Payments by Agent" type="bar" sample="1">
+                <field name="agent_id" />
+                <field name="amount" type="measure" />
+            </graph>
+        </field>
+    </record>
+
+    <!-- ============================================================ -->
+    <!-- PAYMENT RECORDS: Graph evolution (line)                      -->
+    <!-- ============================================================ -->
+    <record id="view_payment_graph_evolution" model="ir.ui.view">
+        <field name="name">commission.settlement.payment.graph.line</field>
+        <field name="model">commission.settlement.payment</field>
+        <field name="arch" type="xml">
+            <graph string="Payment Evolution" type="line" sample="1">
+                <field name="date" interval="month" />
+                <field name="agent_id" />
+                <field name="amount" type="measure" />
+            </graph>
+        </field>
+    </record>
+
+    <!-- ============================================================ -->
+    <!-- ACTIONS: Dashboard entries                                   -->
+    <!-- ============================================================ -->
+
+    <!-- Payments by agent (bar chart) -->
+    <record model="ir.actions.act_window" id="action_dashboard_payments_by_agent">
+        <field name="name">Payments by Agent</field>
+        <field name="res_model">commission.settlement.payment</field>
+        <field name="view_mode">graph,pivot,list</field>
+        <field name="view_id" ref="view_payment_graph_by_agent" />
+        <field name="context">{'search_default_group_agent': 1}</field>
+    </record>
+
+    <!-- Payment evolution (line chart) -->
+    <record model="ir.actions.act_window" id="action_dashboard_payment_evolution">
+        <field name="name">Payment Evolution</field>
+        <field name="res_model">commission.settlement.payment</field>
+        <field name="view_mode">graph,pivot,list</field>
+        <field name="view_id" ref="view_payment_graph_evolution" />
+    </record>
+
+    <!-- Commission analysis: settled vs paid (pivot) -->
+    <record model="ir.actions.act_window" id="action_dashboard_commission_analysis">
+        <field name="name">Commission Analysis</field>
+        <field name="res_model">commission.settlement</field>
+        <field name="view_mode">pivot,graph,list,form</field>
+        <field name="view_id" ref="view_settlement_pivot_payment" />
+        <field name="context">{'search_default_group_agent': 1}</field>
+    </record>
+
+    <!-- ============================================================ -->
+    <!-- MENU: Dashboard section                                      -->
+    <!-- ============================================================ -->
+    <menuitem
+        id="menu_commission_dashboard"
+        name="Dashboard"
+        parent="commission_oca.menu_commission"
+        sequence="50"
+    />
+    <menuitem
+        id="menu_dashboard_by_agent"
+        name="Payments by Agent"
+        parent="menu_commission_dashboard"
+        action="action_dashboard_payments_by_agent"
+        sequence="10"
+    />
+    <menuitem
+        id="menu_dashboard_evolution"
+        name="Payment Evolution"
+        parent="menu_commission_dashboard"
+        action="action_dashboard_payment_evolution"
+        sequence="20"
+    />
+    <menuitem
+        id="menu_dashboard_analysis"
+        name="Commission Analysis"
+        parent="menu_commission_dashboard"
+        action="action_dashboard_commission_analysis"
+        sequence="30"
+    />
+</odoo>

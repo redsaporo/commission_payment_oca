@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="view_commission_register_payment_form" model="ir.ui.view">
+        <field name="name">commission.register.payment.form</field>
+        <field name="model">commission.register.payment</field>
+        <field name="arch" type="xml">
+            <form string="Register Commission Payment">
+                <group>
+                    <group>
+                        <field name="payment_date" />
+                        <field name="reference" placeholder="NOM-2026-03, TRANSF-001..." />
+                        <field name="pay_mode" widget="radio" />
+                        <field name="custom_amount" invisible="pay_mode != 'custom'" />
+                    </group>
+                    <group>
+                        <field name="settlement_count" />
+                        <field name="total_pending" widget="monetary" />
+                        <field name="notes" placeholder="Optional notes..." />
+                    </group>
+                </group>
+                <separator string="Settlements to pay" />
+                <field name="settlement_ids" nolabel="1">
+                    <list create="false" delete="false">
+                        <field name="agent_id" />
+                        <field name="date_from" />
+                        <field name="date_to" />
+                        <field name="total" string="Total" widget="monetary"
+                            options="{'currency_field': 'currency_id'}" />
+                        <field name="amount_paid" string="Paid" widget="monetary"
+                            options="{'currency_field': 'currency_id'}" />
+                        <field name="amount_residual" string="Pending" widget="monetary"
+                            options="{'currency_field': 'currency_id'}"
+                            decoration-danger="amount_residual > 0"
+                            decoration-success="amount_residual == 0" />
+                        <field name="state" widget="badge" />
+                        <field name="currency_id" column_invisible="1" />
+                    </list>
+                </field>
+                <footer>
+                    <button string="Register Payment" name="button_register"
+                        type="object" class="oe_highlight" />
+                    <button string="Cancel" class="oe_link" special="cancel" />
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

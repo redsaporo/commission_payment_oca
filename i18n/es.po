@@ -1,0 +1,345 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# * commission_payment_oca
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 18.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-03-19 00:00+0000\n"
+"PO-Revision-Date: 2026-03-19 00:00+0000\n"
+"Last-Translator: \n"
+"Language-Team: Spanish\n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: commission_payment_oca
+#: model:ir.model,name:commission_payment_oca.model_commission_settlement
+msgid "Settlement"
+msgstr "Liquidación"
+
+#. module: commission_payment_oca
+#: model:ir.model,name:commission_payment_oca.model_commission_settlement_payment
+msgid "Commission Settlement Payment Record"
+msgstr "Registro de Pago de Comisión"
+
+#. module: commission_payment_oca
+#: model:ir.model,name:commission_payment_oca.model_commission_register_payment
+msgid "Register payment for commission settlements"
+msgstr "Registrar pago de liquidaciones de comisión"
+
+#. module: commission_payment_oca
+#: model_terms:ir.ui.view,arch_db:commission_payment_oca.view_settlement_form_payment
+msgid "Register Payment"
+msgstr "Registrar Pago"
+
+#. module: commission_payment_oca
+#: model_terms:ir.ui.view,arch_db:commission_payment_oca.view_settlement_form_payment
+msgid "Revert Payment"
+msgstr "Revertir Pago"
+
+#. module: commission_payment_oca
+#: model:ir.actions.server,name:commission_payment_oca.action_register_payment_multi
+msgid "Register Payment"
+msgstr "Registrar Pago"
+
+#. module: commission_payment_oca
+#: model_terms:ir.ui.view,arch_db:commission_payment_oca.view_settlement_form_payment
+msgid "Payment Tracking"
+msgstr "Seguimiento de Pago"
+
+#. module: commission_payment_oca
+#: model_terms:ir.ui.view,arch_db:commission_payment_oca.view_settlement_form_payment
+msgid "Payment Records"
+msgstr "Registros de Pago"
+
+#. module: commission_payment_oca
+#: model:ir.model.fields,field_description:commission_payment_oca.field_commission_settlement__state
+msgid "Paid"
+msgstr "Pagado"
+
+#. module: commission_payment_oca
+#: model:ir.model.fields,field_description:commission_payment_oca.field_commission_settlement__payment_date
+msgid "Payment Date"
+msgstr "Fecha de Pago"
+
+#. module: commission_payment_oca
+#: model:ir.model.fields,field_description:commission_payment_oca.field_commission_settlement__payment_ref
+msgid "Payment Reference"
+msgstr "Referencia de Pago"
+
+#. module: commission_payment_oca
+#: model:ir.model.fields,field_description:commission_payment_oca.field_commission_settlement__payment_notes
+msgid "Payment Notes"
+msgstr "Notas del Pago"
+
+#. module: commission_payment_oca
+#: model:ir.model.fields,field_description:commission_payment_oca.field_commission_settlement__amount_paid
+msgid "Amount Paid"
+msgstr "Importe Pagado"
+
+#. module: commission_payment_oca
+#: model:ir.model.fields,field_description:commission_payment_oca.field_commission_settlement__amount_residual
+msgid "Amount Pending"
+msgstr "Importe Pendiente"
+
+#. module: commission_payment_oca
+#: model:ir.model.fields,field_description:commission_payment_oca.field_commission_settlement__payment_count
+msgid "Payments"
+msgstr "Pagos"
+
+#. module: commission_payment_oca
+#: model:ir.model.fields,field_description:commission_payment_oca.field_commission_settlement_payment__settlement_id
+msgid "Settlement"
+msgstr "Liquidación"
+
+#. module: commission_payment_oca
+#: model:ir.model.fields,field_description:commission_payment_oca.field_commission_settlement_payment__agent_id
+msgid "Agent"
+msgstr "Agente"
+
+#. module: commission_payment_oca
+#: model:ir.model.fields,field_description:commission_payment_oca.field_commission_settlement_payment__date
+msgid "Payment Date"
+msgstr "Fecha de Pago"
+
+#. module: commission_payment_oca
+#: model:ir.model.fields,field_description:commission_payment_oca.field_commission_settlement_payment__amount
+msgid "Amount Paid"
+msgstr "Importe Pagado"
+
+#. module: commission_payment_oca
+#: model:ir.model.fields,field_description:commission_payment_oca.field_commission_settlement_payment__reference
+msgid "Reference"
+msgstr "Referencia"
+
+#. module: commission_payment_oca
+#: model:ir.model.fields,field_description:commission_payment_oca.field_commission_settlement_payment__notes
+msgid "Notes"
+msgstr "Notas"
+
+#. module: commission_payment_oca
+#: model:ir.model.fields,field_description:commission_payment_oca.field_commission_settlement_payment__source_invoice_ids
+msgid "Source Sales Invoices"
+msgstr "Facturas de Venta Origen"
+
+#. module: commission_payment_oca
+#: model:ir.model.fields,field_description:commission_payment_oca.field_commission_settlement_payment__source_invoice_names
+msgid "Invoices"
+msgstr "Facturas"
+
+#. module: commission_payment_oca
+#: model:ir.model.fields,field_description:commission_payment_oca.field_commission_settlement_payment__source_partner_ids
+msgid "Customers"
+msgstr "Clientes"
+
+#. module: commission_payment_oca
+#: model:ir.model.fields,field_description:commission_payment_oca.field_commission_settlement_payment__source_partner_names
+msgid "Customers"
+msgstr "Clientes"
+
+#. module: commission_payment_oca
+#: model:ir.model.fields,field_description:commission_payment_oca.field_commission_settlement_payment__source_invoice_count
+msgid "Invoice Count"
+msgstr "Nº Facturas"
+
+#. module: commission_payment_oca
+#: model:ir.model.fields,field_description:commission_payment_oca.field_commission_settlement_payment__settlement_total
+msgid "Settlement Total"
+msgstr "Total Liquidación"
+
+#. module: commission_payment_oca
+#: model:ir.model.fields,field_description:commission_payment_oca.field_commission_settlement_payment__date_from
+msgid "Period From"
+msgstr "Período Desde"
+
+#. module: commission_payment_oca
+#: model:ir.model.fields,field_description:commission_payment_oca.field_commission_settlement_payment__date_to
+msgid "Period To"
+msgstr "Período Hasta"
+
+#. module: commission_payment_oca
+#: model_terms:ir.ui.view,arch_db:commission_payment_oca.view_commission_register_payment_form
+msgid "Register Commission Payment"
+msgstr "Registrar Pago de Comisión"
+
+#. module: commission_payment_oca
+#: model:ir.model.fields,field_description:commission_payment_oca.field_commission_register_payment__pay_mode
+msgid "Payment Mode"
+msgstr "Modo de Pago"
+
+#. module: commission_payment_oca
+#: model:ir.model.fields.selection,name:commission_payment_oca.selection__commission_register_payment__pay_mode__full
+msgid "Pay full pending amount"
+msgstr "Pagar importe pendiente completo"
+
+#. module: commission_payment_oca
+#: model:ir.model.fields.selection,name:commission_payment_oca.selection__commission_register_payment__pay_mode__custom
+msgid "Custom amount per settlement"
+msgstr "Importe personalizado por liquidación"
+
+#. module: commission_payment_oca
+#: model:ir.model.fields,field_description:commission_payment_oca.field_commission_register_payment__custom_amount
+msgid "Custom Amount"
+msgstr "Importe Personalizado"
+
+#. module: commission_payment_oca
+#: model:ir.model.fields,field_description:commission_payment_oca.field_commission_register_payment__total_pending
+msgid "Total Pending"
+msgstr "Total Pendiente"
+
+#. module: commission_payment_oca
+#: model:ir.model.fields,field_description:commission_payment_oca.field_commission_register_payment__settlement_count
+msgid "Settlement Count"
+msgstr "Nº Liquidaciones"
+
+#. module: commission_payment_oca
+#: model_terms:ir.ui.view,arch_db:commission_payment_oca.view_commission_register_payment_form
+msgid "Settlements to pay"
+msgstr "Liquidaciones a pagar"
+
+#. module: commission_payment_oca
+#: model_terms:ir.ui.view,arch_db:commission_payment_oca.view_commission_register_payment_form
+msgid "Cancel"
+msgstr "Cancelar"
+
+#. module: commission_payment_oca
+#: model_terms:ir.ui.view,arch_db:commission_payment_oca.view_settlement_form_payment
+msgid "View Invoices"
+msgstr "Ver Facturas"
+
+#. module: commission_payment_oca
+#: model_terms:ir.ui.view,arch_db:commission_payment_oca.view_settlement_form_payment
+msgid "Source Invoices"
+msgstr "Facturas Origen"
+
+#. module: commission_payment_oca
+#: model:ir.ui.view,arch_db:commission_payment_oca.view_settlement_search_payment
+msgid "Paid"
+msgstr "Pagado"
+
+#. module: commission_payment_oca
+#: model:ir.ui.view,arch_db:commission_payment_oca.view_settlement_search_payment
+msgid "Pending Payment"
+msgstr "Pendiente de Pago"
+
+#. module: commission_payment_oca
+#: model:ir.ui.view,arch_db:commission_payment_oca.view_settlement_search_payment
+msgid "Partially Paid"
+msgstr "Parcialmente Pagado"
+
+#. module: commission_payment_oca
+#: model:ir.actions.act_window,name:commission_payment_oca.action_paid_settlements
+msgid "Paid Commissions"
+msgstr "Comisiones Pagadas"
+
+#. module: commission_payment_oca
+#: model:ir.actions.act_window,name:commission_payment_oca.action_pending_settlements
+msgid "Pending Payment"
+msgstr "Pendiente de Pago"
+
+#. module: commission_payment_oca
+#: model:ir.actions.act_window,name:commission_payment_oca.action_all_payment_records
+msgid "Payment Records"
+msgstr "Registros de Pago"
+
+#. module: commission_payment_oca
+#: model:ir.ui.menu,name:commission_payment_oca.menu_paid_settlements
+msgid "Paid Commissions"
+msgstr "Comisiones Pagadas"
+
+#. module: commission_payment_oca
+#: model:ir.ui.menu,name:commission_payment_oca.menu_pending_settlements
+msgid "Pending Payment"
+msgstr "Pendiente de Pago"
+
+#. module: commission_payment_oca
+#: model:ir.ui.menu,name:commission_payment_oca.menu_payment_records
+msgid "Payment Records"
+msgstr "Registros de Pago"
+
+#. module: commission_payment_oca
+#: model:ir.ui.menu,name:commission_payment_oca.menu_commission_dashboard
+msgid "Dashboard"
+msgstr "Panel de Control"
+
+#. module: commission_payment_oca
+#: model:ir.actions.act_window,name:commission_payment_oca.action_dashboard_payments_by_agent
+#: model:ir.ui.menu,name:commission_payment_oca.menu_dashboard_by_agent
+msgid "Payments by Agent"
+msgstr "Pagos por Agente"
+
+#. module: commission_payment_oca
+#: model:ir.actions.act_window,name:commission_payment_oca.action_dashboard_payment_evolution
+#: model:ir.ui.menu,name:commission_payment_oca.menu_dashboard_evolution
+msgid "Payment Evolution"
+msgstr "Evolución de Pagos"
+
+#. module: commission_payment_oca
+#: model:ir.actions.act_window,name:commission_payment_oca.action_dashboard_commission_analysis
+#: model:ir.ui.menu,name:commission_payment_oca.menu_dashboard_analysis
+msgid "Commission Analysis"
+msgstr "Análisis de Comisiones"
+
+#. module: commission_payment_oca
+#: model:ir.actions.report,name:commission_payment_oca.action_report_commission_payment
+msgid "Commission Payment Summary"
+msgstr "Resumen de Pago de Comisiones"
+
+#. module: commission_payment_oca
+#: code:addons/commission_payment_oca/models/commission_settlement.py:0
+msgid "Only settlements in 'Settled' or 'Invoiced' state can receive a payment registration."
+msgstr "Solo las liquidaciones en estado 'Liquidado' o 'Facturado' pueden recibir un registro de pago."
+
+#. module: commission_payment_oca
+#: code:addons/commission_payment_oca/models/commission_settlement.py:0
+msgid "Only paid settlements can be reverted."
+msgstr "Solo las liquidaciones pagadas pueden ser revertidas."
+
+#. module: commission_payment_oca
+#: code:addons/commission_payment_oca/models/commission_settlement.py:0
+msgid "Payment reverted. Settlement returned to settled."
+msgstr "Pago revertido. La liquidación ha vuelto al estado liquidado."
+
+#. module: commission_payment_oca
+#: code:addons/commission_payment_oca/models/commission_settlement.py:0
+msgid "You can't delete paid settlements."
+msgstr "No puedes eliminar liquidaciones pagadas."
+
+#. module: commission_payment_oca
+#: code:addons/commission_payment_oca/models/commission_settlement.py:0
+msgid "No source invoices found."
+msgstr "No se encontraron facturas origen."
+
+#. module: commission_payment_oca
+#: code:addons/commission_payment_oca/wizards/commission_register_payment.py:0
+msgid "No valid settlements to register payment."
+msgstr "No hay liquidaciones válidas para registrar pago."
+
+#. module: commission_payment_oca
+#: code:addons/commission_payment_oca/wizards/commission_register_payment.py:0
+msgid "No settlements selected."
+msgstr "No se han seleccionado liquidaciones."
+
+#. module: commission_payment_oca
+#: code:addons/commission_payment_oca/wizards/commission_register_payment.py:0
+msgid "Commission fully paid. Date: %(date)s. Reference: %(ref)s. Total: %(amount)s"
+msgstr "Comisión pagada completamente. Fecha: %(date)s. Referencia: %(ref)s. Total: %(amount)s"
+
+#. module: commission_payment_oca
+#: code:addons/commission_payment_oca/wizards/commission_register_payment.py:0
+msgid "Partial payment: %(amount)s. Date: %(date)s. Ref: %(ref)s. Remaining: %(remaining)s"
+msgstr "Pago parcial: %(amount)s. Fecha: %(date)s. Ref: %(ref)s. Pendiente: %(remaining)s"
+
+#. module: commission_payment_oca
+#: model_terms:ir.ui.view,arch_db:commission_payment_oca.view_settlement_form_payment
+msgid "This will delete all payment records. Continue?"
+msgstr "Esto eliminará todos los registros de pago. ¿Continuar?"
+
+#. module: commission_payment_oca
+#: model:ir.ui.view,arch_db:commission_payment_oca.view_settlement_search_payment
+msgid "Payment Date"
+msgstr "Fecha de Pago"
