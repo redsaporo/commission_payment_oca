@@ -4,10 +4,10 @@
     "name": "Commission Payment Tracking",
     "version": "18.0.1.0.0",
     "summary": "Track when agent commissions have been paid with full invoice traceability",
-    "author": "MESACHES, Odoo Community Association (OCA)",
+    "author": "MESACHES DESARROLLOS INFORMATICOS SL",
     "category": "Sales",
     "license": "AGPL-3",
-    "website": "https://github.com/OCA/commission",
+    "website": "https://mesaches.com",
     "depends": [
         "account_commission_oca",
     ],
