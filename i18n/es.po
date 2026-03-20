@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 18.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-19 00:00+0000\n"
-"PO-Revision-Date: 2026-03-19 00:00+0000\n"
+"POT-Creation-Date: 2026-03-20 00:00+0000\n"
+"PO-Revision-Date: 2026-03-20 00:00+0000\n"
 "Last-Translator: \n"
 "Language-Team: Spanish\n"
 "Language: es\n"
@@ -25,6 +25,11 @@ msgstr "Liquidación"
 #: model:ir.model,name:commission_payment_oca.model_commission_settlement_payment
 msgid "Commission Settlement Payment Record"
 msgstr "Registro de Pago de Comisión"
+
+#. module: commission_payment_oca
+#: model:ir.model,name:commission_payment_oca.model_commission_settlement_payment_detail
+msgid "Commission Payment Detail Line"
+msgstr "Línea de Detalle de Pago de Comisión"
 
 #. module: commission_payment_oca
 #: model:ir.model,name:commission_payment_oca.model_commission_register_payment
@@ -92,9 +97,14 @@ msgid "Payments"
 msgstr "Pagos"
 
 #. module: commission_payment_oca
-#: model:ir.model.fields,field_description:commission_payment_oca.field_commission_settlement_payment__settlement_id
-msgid "Settlement"
-msgstr "Liquidación"
+#: model:ir.model.fields,field_description:commission_payment_oca.field_commission_settlement__payment_detail_ids
+msgid "Payment Details"
+msgstr "Detalles de Pago"
+
+#. module: commission_payment_oca
+#: model:ir.model.fields,field_description:commission_payment_oca.field_commission_settlement_payment__name
+msgid "Number"
+msgstr "Número"
 
 #. module: commission_payment_oca
 #: model:ir.model.fields,field_description:commission_payment_oca.field_commission_settlement_payment__agent_id
@@ -122,6 +132,16 @@ msgid "Notes"
 msgstr "Notas"
 
 #. module: commission_payment_oca
+#: model:ir.model.fields,field_description:commission_payment_oca.field_commission_settlement_payment__detail_ids
+msgid "Settlement Details"
+msgstr "Detalles de Liquidación"
+
+#. module: commission_payment_oca
+#: model:ir.model.fields,field_description:commission_payment_oca.field_commission_settlement_payment__settlement_count
+msgid "Settlements"
+msgstr "Liquidaciones"
+
+#. module: commission_payment_oca
 #: model:ir.model.fields,field_description:commission_payment_oca.field_commission_settlement_payment__source_invoice_ids
 msgid "Source Sales Invoices"
 msgstr "Facturas de Venta Origen"
@@ -133,10 +153,6 @@ msgstr "Facturas"
 
 #. module: commission_payment_oca
 #: model:ir.model.fields,field_description:commission_payment_oca.field_commission_settlement_payment__source_partner_ids
-msgid "Customers"
-msgstr "Clientes"
-
-#. module: commission_payment_oca
 #: model:ir.model.fields,field_description:commission_payment_oca.field_commission_settlement_payment__source_partner_names
 msgid "Customers"
 msgstr "Clientes"
@@ -148,8 +164,8 @@ msgstr "Nº Facturas"
 
 #. module: commission_payment_oca
 #: model:ir.model.fields,field_description:commission_payment_oca.field_commission_settlement_payment__settlement_total
-msgid "Settlement Total"
-msgstr "Total Liquidación"
+msgid "Commission Total"
+msgstr "Comisión Total"
 
 #. module: commission_payment_oca
 #: model:ir.model.fields,field_description:commission_payment_oca.field_commission_settlement_payment__date_from
@@ -197,6 +213,11 @@ msgid "Settlement Count"
 msgstr "Nº Liquidaciones"
 
 #. module: commission_payment_oca
+#: model:ir.model.fields,field_description:commission_payment_oca.field_commission_register_payment__agent_count
+msgid "Agents"
+msgstr "Agentes"
+
+#. module: commission_payment_oca
 #: model_terms:ir.ui.view,arch_db:commission_payment_oca.view_commission_register_payment_form
 msgid "Settlements to pay"
 msgstr "Liquidaciones a pagar"
@@ -205,11 +226,6 @@ msgstr "Liquidaciones a pagar"
 #: model_terms:ir.ui.view,arch_db:commission_payment_oca.view_commission_register_payment_form
 msgid "Cancel"
 msgstr "Cancelar"
-
-#. module: commission_payment_oca
-#: model_terms:ir.ui.view,arch_db:commission_payment_oca.view_settlement_form_payment
-msgid "View Invoices"
-msgstr "Ver Facturas"
 
 #. module: commission_payment_oca
 #: model_terms:ir.ui.view,arch_db:commission_payment_oca.view_settlement_form_payment
@@ -330,14 +346,24 @@ msgid "Custom amount (%(amount)s) exceeds pending (%(residual)s) for %(name)s."
 msgstr "El importe personalizado (%(amount)s) excede el pendiente (%(residual)s) para %(name)s."
 
 #. module: commission_payment_oca
+#: code:addons/commission_payment_oca/wizards/commission_register_payment.py:0
+msgid "Commission fully paid via %(name)s. Date: %(date)s. Total: %(amount)s"
+msgstr "Comisión pagada completamente vía %(name)s. Fecha: %(date)s. Total: %(amount)s"
+
+#. module: commission_payment_oca
+#: code:addons/commission_payment_oca/wizards/commission_register_payment.py:0
+msgid "Partial payment via %(name)s: %(amount)s. Date: %(date)s. Remaining: %(remaining)s"
+msgstr "Pago parcial vía %(name)s: %(amount)s. Fecha: %(date)s. Pendiente: %(remaining)s"
+
+#. module: commission_payment_oca
 #: model:ir.model.fields,field_description:commission_payment_oca.field_commission_register_payment__currency_id
 msgid "Currency"
 msgstr "Moneda"
 
 #. module: commission_payment_oca
-#: model:commission.settlement.payment,constraint:amount_positive
-msgid "Payment amount must be positive."
-msgstr "El importe del pago debe ser positivo."
+#: model:commission.settlement.payment.detail,constraint:amount_positive
+msgid "Detail amount must be positive."
+msgstr "El importe del detalle debe ser positivo."
 
 #. module: commission_payment_oca
 #: model:ir.model.fields,field_description:commission_payment_oca.field_commission_settlement_payment__payroll_ref
@@ -350,16 +376,6 @@ msgstr "Referencia de Nómina"
 #: model:ir.model.fields,field_description:commission_payment_oca.field_commission_register_payment__payroll_period
 msgid "Payroll Period"
 msgstr "Período de Nómina"
-
-#. module: commission_payment_oca
-#: code:addons/commission_payment_oca/wizards/commission_register_payment.py:0
-msgid "Commission fully paid. Date: %(date)s. Reference: %(ref)s. Total: %(amount)s"
-msgstr "Comisión pagada completamente. Fecha: %(date)s. Referencia: %(ref)s. Total: %(amount)s"
-
-#. module: commission_payment_oca
-#: code:addons/commission_payment_oca/wizards/commission_register_payment.py:0
-msgid "Partial payment: %(amount)s. Date: %(date)s. Ref: %(ref)s. Remaining: %(remaining)s"
-msgstr "Pago parcial: %(amount)s. Fecha: %(date)s. Ref: %(ref)s. Pendiente: %(remaining)s"
 
 #. module: commission_payment_oca
 #: model_terms:ir.ui.view,arch_db:commission_payment_oca.view_settlement_form_payment
@@ -473,13 +489,13 @@ msgstr "Registros de Pago"
 
 #. module: commission_payment_oca
 #: model_terms:ir.ui.view,arch_db:commission_payment_oca.report_commission_payment
-msgid "Reference"
-msgstr "Referencia"
+msgid "Number"
+msgstr "Número"
 
 #. module: commission_payment_oca
 #: model_terms:ir.ui.view,arch_db:commission_payment_oca.report_commission_payment
-msgid "Notes"
-msgstr "Notas"
+msgid "Reference"
+msgstr "Referencia"
 
 #. module: commission_payment_oca
 #: model_terms:ir.ui.view,arch_db:commission_payment_oca.report_commission_payment
@@ -487,9 +503,14 @@ msgid "Total"
 msgstr "Total"
 
 #. module: commission_payment_oca
-#: code:addons/commission_payment_oca/models/commission_settlement.py:0
-msgid "Payment %(date)s - %(agent)s (%(amount)s)"
-msgstr "Pago %(date)s - %(agent)s (%(amount)s)"
+#: model_terms:ir.ui.view,arch_db:commission_payment_oca.view_settlement_payment_form
+msgid "Settlement Details"
+msgstr "Detalles de Liquidación"
+
+#. module: commission_payment_oca
+#: model_terms:ir.ui.view,arch_db:commission_payment_oca.view_settlement_payment_form
+msgid "Source Invoices"
+msgstr "Facturas Origen"
 
 #. module: commission_payment_oca
 #: model:ir.model.fields,field_description:commission_payment_oca.field_commission_settlement_line__source_invoice_id
@@ -500,3 +521,53 @@ msgstr "Factura Origen"
 #: model:ir.model.fields,field_description:commission_payment_oca.field_commission_settlement_line__source_partner_id
 msgid "Source Customer"
 msgstr "Cliente Origen"
+
+#. module: commission_payment_oca
+#: model:ir.model.fields,field_description:commission_payment_oca.field_commission_settlement_payment_detail__payment_id
+msgid "Payment"
+msgstr "Pago"
+
+#. module: commission_payment_oca
+#: model:ir.model.fields,field_description:commission_payment_oca.field_commission_settlement_payment_detail__settlement_id
+msgid "Settlement"
+msgstr "Liquidación"
+
+#. module: commission_payment_oca
+#: model:ir.model.fields,field_description:commission_payment_oca.field_commission_settlement_payment_detail__amount
+msgid "Amount Paid"
+msgstr "Importe Pagado"
+
+#. module: commission_payment_oca
+#: model:ir.model.fields,field_description:commission_payment_oca.field_commission_settlement_payment_detail__payment_name
+msgid "Payment Number"
+msgstr "Número de Pago"
+
+#. module: commission_payment_oca
+#: model:ir.model.fields,field_description:commission_payment_oca.field_commission_settlement_payment_detail__payment_date
+msgid "Date"
+msgstr "Fecha"
+
+#. module: commission_payment_oca
+#: model:ir.model.fields,field_description:commission_payment_oca.field_commission_settlement_payment_detail__payment_reference
+msgid "Reference"
+msgstr "Referencia"
+
+#. module: commission_payment_oca
+#: model:ir.model.fields,field_description:commission_payment_oca.field_commission_settlement_payment_detail__settlement_date_from
+msgid "Period From"
+msgstr "Período Desde"
+
+#. module: commission_payment_oca
+#: model:ir.model.fields,field_description:commission_payment_oca.field_commission_settlement_payment_detail__settlement_date_to
+msgid "Period To"
+msgstr "Período Hasta"
+
+#. module: commission_payment_oca
+#: model:ir.model.fields,field_description:commission_payment_oca.field_commission_settlement_payment_detail__settlement_total
+msgid "Settlement Total"
+msgstr "Total Liquidación"
+
+#. module: commission_payment_oca
+#: model:ir.sequence,name:commission_payment_oca.seq_commission_payment
+msgid "Commission Payment"
+msgstr "Pago de Comisión"

@@ -94,10 +94,10 @@ class CommissionSettlement(models.Model):
     )
 
     # ── Payment records ───────────────────────────────────────────
-    payment_line_ids = fields.One2many(
-        comodel_name="commission.settlement.payment",
+    payment_detail_ids = fields.One2many(
+        comodel_name="commission.settlement.payment.detail",
         inverse_name="settlement_id",
-        string="Payment Records",
+        string="Payment Details",
         readonly=True,
         copy=False,
     )
@@ -106,13 +106,13 @@ class CommissionSettlement(models.Model):
         store=True,
     )
 
-    @api.depends("total", "payment_line_ids", "payment_line_ids.amount")
+    @api.depends("total", "payment_detail_ids", "payment_detail_ids.amount")
     def _compute_payment_amounts(self):
         for rec in self:
-            paid = sum(rec.payment_line_ids.mapped("amount"))
+            paid = sum(rec.payment_detail_ids.mapped("amount"))
             rec.amount_paid = paid
             rec.amount_residual = rec.total - paid
-            rec.payment_count = len(rec.payment_line_ids)
+            rec.payment_count = len(rec.payment_detail_ids.mapped("payment_id"))
             rec.is_fully_paid = paid >= rec.total and rec.total > 0
 
     # ── Actions ───────────────────────────────────────────────────
@@ -139,7 +139,13 @@ class CommissionSettlement(models.Model):
         for rec in self:
             if rec.state != "paid":
                 raise UserError(_("Only paid settlements can be reverted."))
-            rec.payment_line_ids.unlink()
+            details = rec.payment_detail_ids
+            payments = details.mapped("payment_id")
+            details.unlink()
+            # Delete payments that have no more detail lines
+            for payment in payments:
+                if not payment.detail_ids:
+                    payment.unlink()
             rec.write({
                 "state": "settled",
                 "payment_date": False,
@@ -152,12 +158,13 @@ class CommissionSettlement(models.Model):
 
     def action_view_payment_lines(self):
         self.ensure_one()
+        payment_ids = self.payment_detail_ids.mapped("payment_id").ids
         return {
             "type": "ir.actions.act_window",
             "name": _("Payment Records"),
             "res_model": "commission.settlement.payment",
             "view_mode": "list,form",
-            "domain": [("settlement_id", "=", self.id)],
+            "domain": [("id", "in", payment_ids)],
             "context": {"create": False},
         }
 
@@ -167,36 +174,95 @@ class CommissionSettlement(models.Model):
         return super().unlink()
 
 
-class CommissionSettlementPayment(models.Model):
-    """Payment record with full traceability to source sales invoices.
+# ═══════════════════════════════════════════════════════════════════
+# Payment detail: links one payment to one settlement with an amount
+# ═══════════════════════════════════════════════════════════════════
+class CommissionSettlementPaymentDetail(models.Model):
+    _name = "commission.settlement.payment.detail"
+    _description = "Commission Payment Detail Line"
+    _sql_constraints = [
+        ("amount_positive", "CHECK(amount > 0)",
+         "Detail amount must be positive."),
+    ]
 
-    The chain is:
-      payment → settlement → settlement.line → invoice_agent_line_id
-        → object_id (account.move.line) → move_id (account.move = sales invoice)
-        → partner_id (customer)
+    payment_id = fields.Many2one(
+        comodel_name="commission.settlement.payment",
+        required=True,
+        ondelete="cascade",
+        index=True,
+        string="Payment",
+    )
+    settlement_id = fields.Many2one(
+        comodel_name="commission.settlement",
+        required=True,
+        ondelete="restrict",
+        index=True,
+        string="Settlement",
+    )
+    amount = fields.Monetary(
+        string="Amount Paid",
+        currency_field="currency_id",
+        required=True,
+    )
+    currency_id = fields.Many2one(
+        related="payment_id.currency_id",
+    )
+
+    # Related fields for convenience in views
+    settlement_date_from = fields.Date(
+        related="settlement_id.date_from",
+        string="Period From",
+    )
+    settlement_date_to = fields.Date(
+        related="settlement_id.date_to",
+        string="Period To",
+    )
+    settlement_total = fields.Monetary(
+        related="settlement_id.total",
+        string="Settlement Total",
+        currency_field="currency_id",
+    )
+    payment_date = fields.Date(
+        related="payment_id.date",
+        string="Date",
+    )
+    payment_reference = fields.Char(
+        related="payment_id.reference",
+        string="Reference",
+    )
+    payment_name = fields.Char(
+        related="payment_id.name",
+        string="Payment Number",
+    )
+
+
+# ═══════════════════════════════════════════════════════════════════
+# Payment record: one per agent, covers multiple settlements
+# ═══════════════════════════════════════════════════════════════════
+class CommissionSettlementPayment(models.Model):
+    """Payment record grouped by agent with full traceability.
+
+    One payment can cover multiple settlements for the same agent.
+    The detail lines track the per-settlement amount breakdown.
     """
 
     _name = "commission.settlement.payment"
     _description = "Commission Settlement Payment Record"
-    _order = "date desc, id desc"
-    _rec_name = "display_name"
-    _sql_constraints = [
-        ("amount_positive", "CHECK(amount > 0)",
-         "Payment amount must be positive."),
-    ]
+    _order = "name desc, date desc, id desc"
+    _rec_name = "name"
 
-    settlement_id = fields.Many2one(
-        comodel_name="commission.settlement",
-        required=True,
-        ondelete="cascade",
+    name = fields.Char(
+        string="Number",
+        readonly=True,
+        default="/",
+        copy=False,
         index=True,
-        string="Settlement",
     )
     agent_id = fields.Many2one(
-        related="settlement_id.agent_id",
-        store=True,
-        index=True,
+        comodel_name="res.partner",
         string="Agent",
+        required=True,
+        index=True,
     )
     date = fields.Date(
         string="Payment Date",
@@ -206,11 +272,14 @@ class CommissionSettlementPayment(models.Model):
     amount = fields.Monetary(
         string="Amount Paid",
         currency_field="currency_id",
-        required=True,
+        compute="_compute_amount",
+        store=True,
     )
     currency_id = fields.Many2one(
-        related="settlement_id.currency_id",
-        store=True,
+        comodel_name="res.currency",
+        string="Currency",
+        required=True,
+        default=lambda self: self.env.company.currency_id,
     )
     reference = fields.Char(
         string="Reference",
@@ -227,13 +296,43 @@ class CommissionSettlementPayment(models.Model):
         help="e.g., 2026-03, NOM-2026-Q1",
     )
     company_id = fields.Many2one(
-        related="settlement_id.company_id",
+        comodel_name="res.company",
+        string="Company",
+        required=True,
+        default=lambda self: self.env.company,
+    )
+
+    # ── Detail lines (one per settlement) ─────────────────────────
+    detail_ids = fields.One2many(
+        comodel_name="commission.settlement.payment.detail",
+        inverse_name="payment_id",
+        string="Settlement Details",
+    )
+
+    # ── Computed from details ─────────────────────────────────────
+    settlement_count = fields.Integer(
+        compute="_compute_settlement_info",
         store=True,
+        string="Settlements",
+    )
+    settlement_total = fields.Monetary(
+        compute="_compute_settlement_info",
+        store=True,
+        string="Commission Total",
+        currency_field="currency_id",
+    )
+    date_from = fields.Date(
+        compute="_compute_settlement_info",
+        store=True,
+        string="Period From",
+    )
+    date_to = fields.Date(
+        compute="_compute_settlement_info",
+        store=True,
+        string="Period To",
     )
 
     # ── Traceability to source invoices ───────────────────────────
-    # These are computed from the settlement lines to show WHERE
-    # the commission comes from (which sales invoices, which customers)
     source_invoice_ids = fields.Many2many(
         comodel_name="account.move",
         string="Source Sales Invoices",
@@ -260,40 +359,34 @@ class CommissionSettlementPayment(models.Model):
         compute="_compute_source_invoices",
         store=True,
     )
-    settlement_total = fields.Float(
-        related="settlement_id.total",
-        string="Settlement Total",
-        store=True,
-    )
-    date_from = fields.Date(
-        related="settlement_id.date_from",
-        store=True,
-        string="Period From",
-    )
-    date_to = fields.Date(
-        related="settlement_id.date_to",
-        store=True,
-        string="Period To",
-    )
 
-    @api.depends("date", "agent_id.name", "amount")
-    def _compute_display_name(self):
+    # ── Computes ──────────────────────────────────────────────────
+
+    @api.depends("detail_ids.amount")
+    def _compute_amount(self):
         for rec in self:
-            rec.display_name = _(
-                "Payment %(date)s - %(agent)s (%(amount)s)",
-                date=rec.date,
-                agent=rec.agent_id.name or "",
-                amount=f"{rec.amount:.2f}",
-            )
+            rec.amount = sum(rec.detail_ids.mapped("amount"))
+
+    @api.depends("detail_ids.settlement_id")
+    def _compute_settlement_info(self):
+        for rec in self:
+            settlements = rec.detail_ids.mapped("settlement_id")
+            rec.settlement_count = len(settlements)
+            rec.settlement_total = sum(settlements.mapped("total"))
+            if settlements:
+                rec.date_from = min(settlements.mapped("date_from"))
+                rec.date_to = max(settlements.mapped("date_to"))
+            else:
+                rec.date_from = False
+                rec.date_to = False
 
     @api.depends(
-        "settlement_id",
-        "settlement_id.line_ids",
-        "settlement_id.line_ids.source_invoice_id",
+        "detail_ids.settlement_id.line_ids.source_invoice_id",
     )
     def _compute_source_invoices(self):
         for rec in self:
-            invoices = rec.settlement_id.line_ids.mapped("source_invoice_id")
+            settlements = rec.detail_ids.mapped("settlement_id")
+            invoices = settlements.mapped("line_ids.source_invoice_id")
             partners = invoices.mapped("partner_id")
             rec.source_invoice_ids = invoices
             rec.source_invoice_count = len(invoices)
@@ -304,6 +397,28 @@ class CommissionSettlementPayment(models.Model):
             rec.source_partner_names = (
                 ", ".join(partners.mapped("name")) if partners else False
             )
+
+    @api.depends("name", "agent_id.name", "amount")
+    def _compute_display_name(self):
+        for rec in self:
+            rec.display_name = (
+                f"{rec.name} - {rec.agent_id.name or ''} ({rec.amount:.2f})"
+            )
+
+    # ── CRUD ──────────────────────────────────────────────────────
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            if vals.get("name", "/") == "/":
+                vals["name"] = (
+                    self.env["ir.sequence"].next_by_code(
+                        "commission.settlement.payment"
+                    ) or "/"
+                )
+        return super().create(vals_list)
+
+    # ── Actions ───────────────────────────────────────────────────
 
     def action_view_source_invoices(self):
         self.ensure_one()

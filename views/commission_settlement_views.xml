@@ -75,20 +75,14 @@
                 </group>
                 <group string="Payment Records" invisible="payment_count == 0"
                     colspan="4">
-                    <field name="payment_line_ids" nolabel="1" colspan="2">
+                    <field name="payment_detail_ids" nolabel="1" colspan="2">
                         <list create="false" delete="false">
-                            <field name="date" />
+                            <field name="payment_name" string="Payment" />
+                            <field name="payment_date" string="Date" />
                             <field name="amount" widget="monetary"
                                 options="{'currency_field': 'currency_id'}" />
-                            <field name="reference" />
-                            <field name="source_invoice_names" string="Source Invoices" />
-                            <field name="source_partner_names" string="Customers" />
-                            <field name="payroll_ref" optional="show" />
-                            <field name="notes" optional="hide" />
+                            <field name="payment_reference" string="Reference" />
                             <field name="currency_id" column_invisible="1" />
-                            <button name="action_view_source_invoices" type="object"
-                                string="View Invoices" icon="fa-external-link"
-                                class="oe_link" />
                         </list>
                     </field>
                 </group>
@@ -138,15 +132,16 @@
         <field name="model">commission.settlement.payment</field>
         <field name="arch" type="xml">
             <list create="false">
+                <field name="name" string="Number" />
                 <field name="date" />
                 <field name="agent_id" />
-                <field name="settlement_id" />
-                <field name="date_from" string="Period From" optional="show" />
-                <field name="date_to" string="Period To" optional="show" />
                 <field name="amount" widget="monetary"
                     options="{'currency_field': 'currency_id'}" sum="Total Paid" />
+                <field name="settlement_count" string="Settlements" />
                 <field name="settlement_total" string="Commission Total" widget="monetary"
                     options="{'currency_field': 'currency_id'}" optional="show" />
+                <field name="date_from" string="Period From" optional="show" />
+                <field name="date_to" string="Period To" optional="show" />
                 <field name="reference" />
                 <field name="source_invoice_names" string="Source Invoices" />
                 <field name="source_partner_names" string="Customers" />
@@ -159,14 +154,17 @@
             </list>
         </field>
     </record>
+
     <record model="ir.ui.view" id="view_settlement_payment_form">
         <field name="name">commission.settlement.payment.form</field>
         <field name="model">commission.settlement.payment</field>
         <field name="arch" type="xml">
             <form string="Payment Record" create="false" edit="false">
+                <div class="oe_title mb-3">
+                    <h1><field name="name" /></h1>
+                </div>
                 <group>
                     <group>
-                        <field name="settlement_id" />
                         <field name="agent_id" />
                         <field name="date" />
                         <field name="amount" widget="monetary"
@@ -185,28 +183,48 @@
                         <field name="payroll_period" />
                     </group>
                 </group>
-                <group>
+                <notebook>
+                    <page string="Settlement Details">
+                        <field name="detail_ids" nolabel="1">
+                            <list create="false" delete="false">
+                                <field name="settlement_id" />
+                                <field name="settlement_date_from" string="From" />
+                                <field name="settlement_date_to" string="To" />
+                                <field name="settlement_total" string="Settlement Total"
+                                    widget="monetary"
+                                    options="{'currency_field': 'currency_id'}" />
+                                <field name="amount" string="Amount Paid"
+                                    widget="monetary"
+                                    options="{'currency_field': 'currency_id'}" />
+                                <field name="currency_id" column_invisible="1" />
+                            </list>
+                        </field>
+                    </page>
+                    <page string="Source Invoices">
+                        <field name="source_invoice_ids" nolabel="1">
+                            <list create="false" delete="false">
+                                <field name="name" />
+                                <field name="partner_id" />
+                                <field name="invoice_date" />
+                                <field name="amount_total" />
+                                <field name="state" widget="badge" />
+                            </list>
+                        </field>
+                    </page>
+                </notebook>
+                <group invisible="not notes">
                     <field name="notes" />
-                </group>
-                <group string="Source Invoices">
-                    <field name="source_invoice_ids" nolabel="1">
-                        <list create="false" delete="false">
-                            <field name="name" />
-                            <field name="partner_id" />
-                            <field name="invoice_date" />
-                            <field name="amount_total" />
-                            <field name="state" widget="badge" />
-                        </list>
-                    </field>
                 </group>
             </form>
         </field>
     </record>
+
     <record model="ir.ui.view" id="view_settlement_payment_search">
         <field name="name">commission.settlement.payment.search</field>
         <field name="model">commission.settlement.payment</field>
         <field name="arch" type="xml">
             <search>
+                <field name="name" />
                 <field name="agent_id" />
                 <field name="reference" />
                 <field name="date" />
@@ -220,6 +238,27 @@
                         context="{'group_by': 'date:month'}" />
                 </group>
             </search>
+        </field>
+    </record>
+
+    <!-- ============================================================ -->
+    <!-- PAYMENT DETAIL: List (for embedded views)                    -->
+    <!-- ============================================================ -->
+    <record model="ir.ui.view" id="view_settlement_payment_detail_tree">
+        <field name="name">commission.settlement.payment.detail.list</field>
+        <field name="model">commission.settlement.payment.detail</field>
+        <field name="arch" type="xml">
+            <list create="false" delete="false">
+                <field name="payment_name" string="Payment" />
+                <field name="settlement_id" />
+                <field name="settlement_date_from" string="From" />
+                <field name="settlement_date_to" string="To" />
+                <field name="settlement_total" string="Settlement Total"
+                    widget="monetary" options="{'currency_field': 'currency_id'}" />
+                <field name="amount" string="Amount Paid"
+                    widget="monetary" options="{'currency_field': 'currency_id'}" />
+                <field name="currency_id" column_invisible="1" />
+            </list>
         </field>
     </record>
 

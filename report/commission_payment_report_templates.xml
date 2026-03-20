@@ -95,38 +95,37 @@
                             </tfoot>
                         </table>
 
-                        <t t-if="s.payment_line_ids">
+                        <t t-if="s.payment_detail_ids">
                             <h5 class="mt-4">Payment Records</h5>
                             <table class="table table-sm">
                                 <thead>
                                     <tr>
+                                        <th>Number</th>
                                         <th>Date</th>
                                         <th>Reference</th>
                                         <th class="text-end">Amount</th>
-                                        <th>Notes</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <t t-foreach="s.payment_line_ids" t-as="p">
+                                    <t t-foreach="s.payment_detail_ids" t-as="d">
                                         <tr>
-                                            <td><t t-esc="p.date" t-options='{"widget": "date"}' /></td>
-                                            <td><t t-esc="p.reference or '-'" /></td>
+                                            <td><t t-esc="d.payment_id.name" /></td>
+                                            <td><t t-esc="d.payment_id.date" t-options='{"widget": "date"}' /></td>
+                                            <td><t t-esc="d.payment_id.reference or '-'" /></td>
                                             <td class="text-end">
-                                                <t t-esc="p.amount"
+                                                <t t-esc="d.amount"
                                                    t-options='{"widget": "monetary", "display_currency": s.currency_id}' />
                                             </td>
-                                            <td><t t-esc="p.notes or ''" /></td>
                                         </tr>
                                     </t>
                                 </tbody>
                                 <tfoot>
                                     <tr class="fw-bold border-top text-success">
-                                        <td colspan="2">Total Paid</td>
+                                        <td colspan="3">Total Paid</td>
                                         <td class="text-end">
                                             <t t-esc="s.amount_paid"
                                                t-options='{"widget": "monetary", "display_currency": s.currency_id}' />
                                         </td>
-                                        <td />
                                     </tr>
                                 </tfoot>
                             </table>

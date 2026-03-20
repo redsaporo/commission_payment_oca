@@ -34,19 +34,40 @@ class TestCommissionPayment(TransactionCase):
             "settled_amount": 500.0,
         })
 
-    def _create_wizard(self, **kwargs):
-        """Helper to create payment wizard for self.settlement."""
+    def _create_wizard(self, settlement_ids=None, **kwargs):
+        """Helper to create payment wizard."""
         vals = {
             "payment_date": "2026-02-15",
             "pay_mode": "full",
         }
         vals.update(kwargs)
+        ids = settlement_ids or self.settlement.ids
         return self.env["commission.register.payment"].with_context(
-            active_ids=self.settlement.ids,
+            active_ids=ids,
             active_model="commission.settlement",
         ).create(vals)
 
-    # ── Original tests ──────────────────────────────────────────
+    def _create_payment(self, settlements=None, amount=None, **kwargs):
+        """Helper to create a payment record directly."""
+        if settlements is None:
+            settlements = self.settlement
+        detail_vals = []
+        for s in settlements:
+            detail_vals.append((0, 0, {
+                "settlement_id": s.id,
+                "amount": amount or s.total,
+            }))
+        vals = {
+            "agent_id": settlements[0].agent_id.id,
+            "date": "2026-02-15",
+            "currency_id": settlements[0].currency_id.id,
+            "company_id": settlements[0].company_id.id,
+            "detail_ids": detail_vals,
+        }
+        vals.update(kwargs)
+        return self.env["commission.settlement.payment"].create(vals)
+
+    # ── Core payment tests ────────────────────────────────────────
 
     def test_full_payment(self):
         wiz = self._create_wizard(reference="NOM-02")
@@ -67,21 +88,18 @@ class TestCommissionPayment(TransactionCase):
         self.assertEqual(self.settlement.amount_residual, 300.0)
 
     def test_revert(self):
-        self.env["commission.settlement.payment"].create({
-            "settlement_id": self.settlement.id, "date": "2026-02-15",
-            "amount": 500.0, "reference": "TEST",
-        })
+        payment = self._create_payment()
         self.settlement.write({"state": "paid", "payment_date": "2026-02-15"})
         self.settlement.action_revert_to_settled()
         self.assertEqual(self.settlement.state, "settled")
         self.assertEqual(self.settlement.payment_count, 0)
+        # Payment should be deleted since it had no remaining details
+        self.assertFalse(payment.exists())
 
     def test_cannot_delete_paid(self):
         self.settlement.write({"state": "paid"})
         with self.assertRaises(UserError):
             self.settlement.unlink()
-
-    # ── New tests ───────────────────────────────────────────────
 
     def test_overpayment_rejected(self):
         """Custom amount exceeding residual should raise UserError."""
@@ -90,53 +108,23 @@ class TestCommissionPayment(TransactionCase):
             wiz.button_register()
 
     def test_negative_amount_constraint(self):
-        """Negative payment amount should be rejected by SQL constraint."""
+        """Negative detail amount should be rejected by SQL constraint."""
         with self.assertRaises(Exception):
-            self.env["commission.settlement.payment"].create({
-                "settlement_id": self.settlement.id,
-                "date": "2026-02-15",
-                "amount": -10.0,
-            })
+            self._create_payment(amount=-10.0)
 
     def test_partial_then_full(self):
         """Pay partially, then pay the rest. Settlement should become paid."""
-        # First partial payment
         wiz1 = self._create_wizard(pay_mode="custom", custom_amount=200.0)
         wiz1.button_register()
         self.assertEqual(self.settlement.state, "settled")
         self.assertEqual(self.settlement.amount_residual, 300.0)
         self.assertEqual(self.settlement.payment_count, 1)
 
-        # Full remainder
         wiz2 = self._create_wizard(pay_mode="full")
         wiz2.button_register()
         self.assertEqual(self.settlement.state, "paid")
         self.assertEqual(self.settlement.amount_residual, 0)
         self.assertEqual(self.settlement.payment_count, 2)
-
-    def test_multi_settlement_payment(self):
-        """Register payment for multiple settlements at once."""
-        settlement2 = self.env["commission.settlement"].create({
-            "agent_id": self.agent.id,
-            "date_from": "2026-02-01",
-            "date_to": "2026-02-28",
-            "settlement_type": "manual",
-        })
-        self.env["commission.settlement.line"].create({
-            "settlement_id": settlement2.id,
-            "date": "2026-02-15",
-            "commission_id": self.commission.id,
-            "settled_amount": 300.0,
-        })
-        wiz = self.env["commission.register.payment"].with_context(
-            active_ids=[self.settlement.id, settlement2.id],
-            active_model="commission.settlement",
-        ).create({"payment_date": "2026-03-01", "pay_mode": "full"})
-        wiz.button_register()
-        self.assertEqual(self.settlement.state, "paid")
-        self.assertEqual(settlement2.state, "paid")
-        self.assertEqual(self.settlement.amount_paid, 500.0)
-        self.assertEqual(settlement2.amount_paid, 300.0)
 
     def test_payroll_ref_propagation(self):
         """Payroll reference from wizard propagates to payment record."""
@@ -145,19 +133,17 @@ class TestCommissionPayment(TransactionCase):
             payroll_period="2026-01",
         )
         wiz.button_register()
-        payment = self.settlement.payment_line_ids[0]
+        detail = self.settlement.payment_detail_ids[0]
+        payment = detail.payment_id
         self.assertEqual(payment.payroll_ref, "NOM-2026-01")
         self.assertEqual(payment.payroll_period, "2026-01")
 
     def test_zero_amount_skipped(self):
         """Settlement with zero residual is skipped without error."""
-        # Pay fully first
         wiz1 = self._create_wizard()
         wiz1.button_register()
         self.assertEqual(self.settlement.state, "paid")
-        # Revert to settled so wizard allows it
         self.settlement.action_revert_to_settled()
-        # Now residual is back to 500, pay fully again
         wiz2 = self._create_wizard()
         wiz2.button_register()
         self.assertEqual(self.settlement.state, "paid")
@@ -172,7 +158,7 @@ class TestCommissionPayment(TransactionCase):
         )
         wiz.button_register()
         self.assertEqual(self.settlement.state, "paid")
-        self.assertTrue(self.settlement.payment_line_ids)
+        self.assertTrue(self.settlement.payment_detail_ids)
 
         self.settlement.action_revert_to_settled()
         self.assertEqual(self.settlement.state, "settled")
@@ -184,21 +170,156 @@ class TestCommissionPayment(TransactionCase):
     def test_source_invoice_computed_on_line(self):
         """source_invoice_id should be computed on settlement lines."""
         line = self.settlement.line_ids[0]
-        # Without invoice_agent_line_id, it may fallback or remain False
-        # but the field must exist and not raise
         self.assertFalse(line.source_invoice_id)
         self.assertFalse(line.source_partner_id)
 
-    def test_payment_display_name(self):
-        """Payment record should have a readable display_name."""
-        payment = self.env["commission.settlement.payment"].create({
-            "settlement_id": self.settlement.id,
-            "date": "2026-02-15",
-            "amount": 500.0,
-            "reference": "TEST",
+    # ── Grouped payment tests ────────────────────────────────────
+
+    def test_multi_settlement_same_agent_creates_one_payment(self):
+        """Multiple settlements for the same agent = 1 payment."""
+        settlement2 = self.env["commission.settlement"].create({
+            "agent_id": self.agent.id,
+            "date_from": "2026-02-01",
+            "date_to": "2026-02-28",
+            "settlement_type": "manual",
         })
-        self.assertIn("500.00", payment.display_name)
+        self.env["commission.settlement.line"].create({
+            "settlement_id": settlement2.id,
+            "date": "2026-02-15",
+            "commission_id": self.commission.id,
+            "settled_amount": 300.0,
+        })
+        wiz = self._create_wizard(
+            settlement_ids=[self.settlement.id, settlement2.id],
+        )
+        wiz.button_register()
+
+        self.assertEqual(self.settlement.state, "paid")
+        self.assertEqual(settlement2.state, "paid")
+        self.assertEqual(self.settlement.amount_paid, 500.0)
+        self.assertEqual(settlement2.amount_paid, 300.0)
+
+        # Should create exactly 1 payment record
+        payments = (
+            self.settlement.payment_detail_ids.mapped("payment_id")
+            | settlement2.payment_detail_ids.mapped("payment_id")
+        )
+        self.assertEqual(len(payments), 1)
+        self.assertEqual(payments.amount, 800.0)
+        self.assertEqual(payments.settlement_count, 2)
+        self.assertEqual(len(payments.detail_ids), 2)
+
+    def test_multi_agent_creates_separate_payments(self):
+        """Settlements for different agents = separate payments."""
+        agent2 = self.env["res.partner"].create({
+            "name": "Agent Two",
+            "agent": True,
+            "agent_type": "agent",
+            "commission_id": self.commission.id,
+            "settlement": "monthly",
+        })
+        settlement2 = self.env["commission.settlement"].create({
+            "agent_id": agent2.id,
+            "date_from": "2026-02-01",
+            "date_to": "2026-02-28",
+            "settlement_type": "manual",
+        })
+        self.env["commission.settlement.line"].create({
+            "settlement_id": settlement2.id,
+            "date": "2026-02-15",
+            "commission_id": self.commission.id,
+            "settled_amount": 300.0,
+        })
+        wiz = self._create_wizard(
+            settlement_ids=[self.settlement.id, settlement2.id],
+        )
+        wiz.button_register()
+
+        self.assertEqual(self.settlement.state, "paid")
+        self.assertEqual(settlement2.state, "paid")
+
+        # 2 different payments (1 per agent)
+        pay1 = self.settlement.payment_detail_ids.mapped("payment_id")
+        pay2 = settlement2.payment_detail_ids.mapped("payment_id")
+        self.assertEqual(len(pay1), 1)
+        self.assertEqual(len(pay2), 1)
+        self.assertNotEqual(pay1, pay2)
+        self.assertEqual(pay1.agent_id, self.agent)
+        self.assertEqual(pay2.agent_id, agent2)
+        self.assertEqual(pay1.amount, 500.0)
+        self.assertEqual(pay2.amount, 300.0)
+
+    def test_payment_sequential_name(self):
+        """Payment records should get sequential PAY/ names."""
+        wiz = self._create_wizard()
+        wiz.button_register()
+        payment = self.settlement.payment_detail_ids[0].payment_id
+        self.assertTrue(payment.name.startswith("PAY/"))
+        self.assertNotEqual(payment.name, "/")
+
+    def test_payment_display_name(self):
+        """Payment record should have a readable display_name with name."""
+        payment = self._create_payment(reference="TEST")
+        self.assertIn("PAY/", payment.display_name)
         self.assertIn("Agent Test", payment.display_name)
+        self.assertIn("500.00", payment.display_name)
+
+    def test_payment_computed_fields(self):
+        """Payment computed fields aggregate from all settlements."""
+        settlement2 = self.env["commission.settlement"].create({
+            "agent_id": self.agent.id,
+            "date_from": "2026-03-01",
+            "date_to": "2026-03-31",
+            "settlement_type": "manual",
+        })
+        self.env["commission.settlement.line"].create({
+            "settlement_id": settlement2.id,
+            "date": "2026-03-15",
+            "commission_id": self.commission.id,
+            "settled_amount": 200.0,
+        })
+        payment = self._create_payment(
+            settlements=self.settlement | settlement2,
+            amount=None,
+        )
+        # amount is sum of detail amounts (500 + 200)
+        self.assertEqual(payment.amount, 700.0)
+        self.assertEqual(payment.settlement_count, 2)
+        self.assertEqual(payment.settlement_total, 700.0)
+        self.assertEqual(payment.date_from.isoformat(), "2026-01-01")
+        self.assertEqual(payment.date_to.isoformat(), "2026-03-31")
+
+    def test_revert_partial_keeps_payment(self):
+        """Reverting one settlement from a multi-settlement payment
+        keeps the payment for the remaining settlement."""
+        settlement2 = self.env["commission.settlement"].create({
+            "agent_id": self.agent.id,
+            "date_from": "2026-02-01",
+            "date_to": "2026-02-28",
+            "settlement_type": "manual",
+        })
+        self.env["commission.settlement.line"].create({
+            "settlement_id": settlement2.id,
+            "date": "2026-02-15",
+            "commission_id": self.commission.id,
+            "settled_amount": 300.0,
+        })
+        # Create one payment covering both settlements
+        payment = self._create_payment(
+            settlements=self.settlement | settlement2,
+        )
+        self.settlement.write({"state": "paid", "payment_date": "2026-02-15"})
+        settlement2.write({"state": "paid", "payment_date": "2026-02-15"})
+
+        # Revert only settlement 1
+        self.settlement.action_revert_to_settled()
+        self.assertEqual(self.settlement.state, "settled")
+        self.assertEqual(self.settlement.payment_count, 0)
+        # Payment still exists for settlement2
+        self.assertTrue(payment.exists())
+        self.assertEqual(len(payment.detail_ids), 1)
+        self.assertEqual(payment.detail_ids.settlement_id, settlement2)
+        self.assertEqual(payment.amount, 300.0)
 
     def test_report_renders(self):
         """PDF report should render without errors."""

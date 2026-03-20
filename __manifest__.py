@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
     "name": "Commission Payment Tracking",
-    "version": "18.0.1.0.1",
+    "version": "18.0.1.1.0",
     "summary": "Track when agent commissions have been paid with full invoice traceability",
     "author": "MESACHES DESARROLLOS INFORMATICOS SL",
     "category": "Sales",
@@ -13,6 +13,7 @@
     ],
     "data": [
         "security/ir.model.access.csv",
+        "data/ir_sequence.xml",
         "wizards/commission_register_payment_views.xml",
         "views/commission_settlement_views.xml",
         "views/commission_payment_dashboard.xml",

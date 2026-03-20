@@ -78,6 +78,9 @@ class CommissionRegisterPayment(models.TransientModel):
     settlement_count = fields.Integer(
         compute="_compute_summary",
     )
+    agent_count = fields.Integer(
+        compute="_compute_summary",
+    )
 
     @api.depends("settlement_ids")
     def _compute_summary(self):
@@ -86,6 +89,7 @@ class CommissionRegisterPayment(models.TransientModel):
                 wiz.settlement_ids.mapped("amount_residual")
             )
             wiz.settlement_count = len(wiz.settlement_ids)
+            wiz.agent_count = len(wiz.settlement_ids.mapped("agent_id"))
             wiz.currency_id = (
                 wiz.settlement_ids[:1].currency_id
                 or wiz.env.company.currency_id
@@ -98,67 +102,94 @@ class CommissionRegisterPayment(models.TransientModel):
 
         payment_obj = self.env["commission.settlement.payment"]
 
+        # ── Group settlements by agent ────────────────────────────
+        agent_groups = {}
         for settlement in self.settlement_ids:
-            amount = (
-                settlement.amount_residual
-                if self.pay_mode == "full"
-                else self.custom_amount
-            )
-            if amount <= 0:
+            agent = settlement.agent_id
+            if agent not in agent_groups:
+                agent_groups[agent] = self.env["commission.settlement"]
+            agent_groups[agent] |= settlement
+
+        for agent, settlements in agent_groups.items():
+            detail_vals = []
+            for settlement in settlements:
+                if self.pay_mode == "full":
+                    amount = settlement.amount_residual
+                else:
+                    amount = self.custom_amount
+
+                if amount <= 0:
+                    continue
+
+                if (
+                    self.pay_mode == "custom"
+                    and amount > settlement.amount_residual
+                ):
+                    raise exceptions.UserError(
+                        _(
+                            "Custom amount (%(amount)s) exceeds pending "
+                            "(%(residual)s) for %(name)s.",
+                            amount=f"{amount:.2f}",
+                            residual=f"{settlement.amount_residual:.2f}",
+                            name=settlement.display_name,
+                        )
+                    )
+
+                detail_vals.append({
+                    "settlement_id": settlement.id,
+                    "amount": amount,
+                })
+
+            if not detail_vals:
                 continue
 
-            if self.pay_mode == "custom" and amount > settlement.amount_residual:
-                raise exceptions.UserError(
-                    _(
-                        "Custom amount (%(amount)s) exceeds pending "
-                        "(%(residual)s) for %(name)s.",
-                        amount=f"{amount:.2f}",
-                        residual=f"{settlement.amount_residual:.2f}",
-                        name=settlement.display_name,
-                    )
-                )
-
-            payment_obj.create({
-                "settlement_id": settlement.id,
+            # Create ONE payment for this agent
+            payment = payment_obj.create({
+                "agent_id": agent.id,
                 "date": self.payment_date,
-                "amount": amount,
                 "reference": self.reference or False,
                 "notes": self.notes or False,
                 "payroll_ref": self.payroll_ref or False,
                 "payroll_period": self.payroll_period or False,
+                "currency_id": settlements[0].currency_id.id,
+                "company_id": settlements[0].company_id.id,
+                "detail_ids": [(0, 0, v) for v in detail_vals],
             })
 
             # Flush to trigger stored computed field recomputation
-            settlement.flush_recordset()
+            settlements.flush_recordset()
 
-            if settlement.is_fully_paid:
-                settlement.write({
-                    "state": "paid",
-                    "payment_date": self.payment_date,
-                    "payment_ref": self.reference or False,
-                    "payment_notes": self.notes or False,
-                })
-                settlement.message_post(
-                    body=_(
-                        "Commission fully paid. Date: %(date)s. "
-                        "Reference: %(ref)s. Total: %(amount)s",
-                        date=self.payment_date,
-                        ref=self.reference or "-",
-                        amount=f"{settlement.amount_paid:.2f}",
-                    ),
-                )
-            else:
-                settlement.message_post(
-                    body=_(
-                        "Partial payment: %(amount)s. "
-                        "Date: %(date)s. Ref: %(ref)s. "
-                        "Remaining: %(remaining)s",
-                        amount=f"{amount:.2f}",
-                        date=self.payment_date,
-                        ref=self.reference or "-",
-                        remaining=f"{settlement.amount_residual:.2f}",
-                    ),
-                )
+            for settlement in settlements:
+                if settlement.is_fully_paid:
+                    settlement.write({
+                        "state": "paid",
+                        "payment_date": self.payment_date,
+                        "payment_ref": payment.name,
+                        "payment_notes": self.notes or False,
+                    })
+                    settlement.message_post(
+                        body=_(
+                            "Commission fully paid via %(name)s. "
+                            "Date: %(date)s. Total: %(amount)s",
+                            name=payment.name,
+                            date=self.payment_date,
+                            amount=f"{settlement.amount_paid:.2f}",
+                        ),
+                    )
+                else:
+                    detail = payment.detail_ids.filtered(
+                        lambda d: d.settlement_id == settlement
+                    )
+                    settlement.message_post(
+                        body=_(
+                            "Partial payment via %(name)s: %(amount)s. "
+                            "Date: %(date)s. Remaining: %(remaining)s",
+                            name=payment.name,
+                            amount=f"{detail.amount:.2f}" if detail else "0",
+                            date=self.payment_date,
+                            remaining=f"{settlement.amount_residual:.2f}",
+                        ),
+                    )
 
         return {
             "type": "ir.actions.act_window",
