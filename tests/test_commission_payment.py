@@ -181,6 +181,25 @@ class TestCommissionPayment(TransactionCase):
         self.assertFalse(self.settlement.payment_notes)
         self.assertEqual(self.settlement.payment_count, 0)
 
+    def test_source_invoice_computed_on_line(self):
+        """source_invoice_id should be computed on settlement lines."""
+        line = self.settlement.line_ids[0]
+        # Without invoice_agent_line_id, it may fallback or remain False
+        # but the field must exist and not raise
+        self.assertFalse(line.source_invoice_id)
+        self.assertFalse(line.source_partner_id)
+
+    def test_payment_display_name(self):
+        """Payment record should have a readable display_name."""
+        payment = self.env["commission.settlement.payment"].create({
+            "settlement_id": self.settlement.id,
+            "date": "2026-02-15",
+            "amount": 500.0,
+            "reference": "TEST",
+        })
+        self.assertIn("500.00", payment.display_name)
+        self.assertIn("Agent Test", payment.display_name)
+
     def test_report_renders(self):
         """PDF report should render without errors."""
         report = self.env.ref(

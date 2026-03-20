@@ -465,3 +465,38 @@ msgstr "Importe"
 #: model_terms:ir.ui.view,arch_db:commission_payment_oca.report_commission_payment
 msgid "Total Paid"
 msgstr "Total Pagado"
+
+#. module: commission_payment_oca
+#: model_terms:ir.ui.view,arch_db:commission_payment_oca.report_commission_payment
+msgid "Payment Records"
+msgstr "Registros de Pago"
+
+#. module: commission_payment_oca
+#: model_terms:ir.ui.view,arch_db:commission_payment_oca.report_commission_payment
+msgid "Reference"
+msgstr "Referencia"
+
+#. module: commission_payment_oca
+#: model_terms:ir.ui.view,arch_db:commission_payment_oca.report_commission_payment
+msgid "Notes"
+msgstr "Notas"
+
+#. module: commission_payment_oca
+#: model_terms:ir.ui.view,arch_db:commission_payment_oca.report_commission_payment
+msgid "Total"
+msgstr "Total"
+
+#. module: commission_payment_oca
+#: code:addons/commission_payment_oca/models/commission_settlement.py:0
+msgid "Payment %(date)s - %(agent)s (%(amount)s)"
+msgstr "Pago %(date)s - %(agent)s (%(amount)s)"
+
+#. module: commission_payment_oca
+#: model:ir.model.fields,field_description:commission_payment_oca.field_commission_settlement_line__source_invoice_id
+msgid "Source Invoice"
+msgstr "Factura Origen"
+
+#. module: commission_payment_oca
+#: model:ir.model.fields,field_description:commission_payment_oca.field_commission_settlement_line__source_partner_id
+msgid "Source Customer"
+msgstr "Cliente Origen"

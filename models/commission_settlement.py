@@ -5,6 +5,48 @@ from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
 
+class CommissionSettlementLine(models.Model):
+    _inherit = "commission.settlement.line"
+
+    source_invoice_id = fields.Many2one(
+        comodel_name="account.move",
+        string="Source Invoice",
+        compute="_compute_source_invoice",
+        store=True,
+    )
+    source_partner_id = fields.Many2one(
+        comodel_name="res.partner",
+        string="Source Customer",
+        compute="_compute_source_invoice",
+        store=True,
+    )
+
+    @api.depends("invoice_agent_line_id", "invoice_line_id", "settlement_id.agent_id")
+    def _compute_source_invoice(self):
+        for line in self:
+            inv = False
+            # Route 1: standard OCA field
+            if line.invoice_agent_line_id and line.invoice_agent_line_id.invoice_id:
+                inv = line.invoice_agent_line_id.invoice_id
+            # Route 2: related field
+            elif line.invoice_line_id and line.invoice_line_id.move_id:
+                inv = line.invoice_line_id.move_id
+            # Route 3: reverse search by match
+            else:
+                agent_line = self.env["account.invoice.line.agent"].search([
+                    ("agent_id", "=", line.settlement_id.agent_id.id),
+                    ("commission_id", "=", line.commission_id.id),
+                    ("amount", "=", line.settled_amount),
+                    ("settled", "=", True),
+                    ("invoice_date", ">=", line.settlement_id.date_from),
+                    ("invoice_date", "<=", line.settlement_id.date_to),
+                ], limit=1)
+                if agent_line and agent_line.invoice_id:
+                    inv = agent_line.invoice_id
+            line.source_invoice_id = inv
+            line.source_partner_id = inv.partner_id if inv else False
+
+
 class CommissionSettlement(models.Model):
     _inherit = "commission.settlement"
 
@@ -137,6 +179,7 @@ class CommissionSettlementPayment(models.Model):
     _name = "commission.settlement.payment"
     _description = "Commission Settlement Payment Record"
     _order = "date desc, id desc"
+    _rec_name = "display_name"
     _sql_constraints = [
         ("amount_positive", "CHECK(amount > 0)",
          "Payment amount must be positive."),
@@ -233,36 +276,34 @@ class CommissionSettlementPayment(models.Model):
         string="Period To",
     )
 
-    @api.depends("settlement_id", "settlement_id.line_ids")
+    @api.depends("date", "agent_id.name", "amount")
+    def _compute_display_name(self):
+        for rec in self:
+            rec.display_name = _(
+                "Payment %(date)s - %(agent)s (%(amount)s)",
+                date=rec.date,
+                agent=rec.agent_id.name or "",
+                amount=f"{rec.amount:.2f}",
+            )
+
+    @api.depends(
+        "settlement_id",
+        "settlement_id.line_ids",
+        "settlement_id.line_ids.source_invoice_id",
+    )
     def _compute_source_invoices(self):
         for rec in self:
-            invoices = self.env["account.move"]
-            partners = self.env["res.partner"]
-            for line in rec.settlement_id.line_ids:
-                # Chain: settlement_line → invoice_agent_line_id → object_id → move_id
-                if line.invoice_agent_line_id:
-                    inv = line.invoice_agent_line_id.invoice_id
-                    if inv:
-                        invoices |= inv
-                        if inv.partner_id:
-                            partners |= inv.partner_id
-                # Fallback: invoice_line_id → move_id
-                elif line.invoice_line_id:
-                    inv = line.invoice_line_id.move_id
-                    if inv:
-                        invoices |= inv
-                        if inv.partner_id:
-                            partners |= inv.partner_id
-
+            invoices = rec.settlement_id.line_ids.mapped("source_invoice_id")
+            partners = invoices.mapped("partner_id")
             rec.source_invoice_ids = invoices
             rec.source_invoice_count = len(invoices)
             rec.source_partner_ids = partners
-            rec.source_invoice_names = ", ".join(
-                invoices.mapped("name")
-            ) if invoices else False
-            rec.source_partner_names = ", ".join(
-                partners.mapped("name")
-            ) if partners else False
+            rec.source_invoice_names = (
+                ", ".join(invoices.mapped("name")) if invoices else False
+            )
+            rec.source_partner_names = (
+                ", ".join(partners.mapped("name")) if partners else False
+            )
 
     def action_view_source_invoices(self):
         self.ensure_one()

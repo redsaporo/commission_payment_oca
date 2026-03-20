@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
     "name": "Commission Payment Tracking",
-    "version": "18.0.1.0.0",
+    "version": "18.0.1.0.1",
     "summary": "Track when agent commissions have been paid with full invoice traceability",
     "author": "MESACHES DESARROLLOS INFORMATICOS SL",
     "category": "Sales",
@@ -22,4 +22,5 @@
     "installable": True,
     "application": False,
     "auto_install": False,
+    "post_init_hook": "post_init_hook",
 }

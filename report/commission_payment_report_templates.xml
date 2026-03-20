@@ -75,22 +75,8 @@
                                     <tr>
                                         <td><t t-esc="line.date" t-options='{"widget": "date"}' /></td>
                                         <td><t t-esc="line.commission_id.name" /></td>
-                                        <td>
-                                            <t t-if="line.invoice_agent_line_id and line.invoice_agent_line_id.invoice_id">
-                                                <t t-esc="line.invoice_agent_line_id.invoice_id.name" />
-                                            </t>
-                                            <t t-elif="line.invoice_line_id and line.invoice_line_id.move_id">
-                                                <t t-esc="line.invoice_line_id.move_id.name" />
-                                            </t>
-                                        </td>
-                                        <td>
-                                            <t t-if="line.invoice_agent_line_id and line.invoice_agent_line_id.invoice_id">
-                                                <t t-esc="line.invoice_agent_line_id.invoice_id.partner_id.name" />
-                                            </t>
-                                            <t t-elif="line.invoice_line_id and line.invoice_line_id.move_id">
-                                                <t t-esc="line.invoice_line_id.move_id.partner_id.name" />
-                                            </t>
-                                        </td>
+                                        <td><t t-esc="line.source_invoice_id.name" /></td>
+                                        <td><t t-esc="line.source_partner_id.name" /></td>
                                         <td class="text-end">
                                             <t t-esc="line.settled_amount"
                                                t-options='{"widget": "monetary", "display_currency": s.currency_id}' />
