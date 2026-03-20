@@ -15,6 +15,7 @@
         "security/ir.model.access.csv",
         "data/ir_sequence.xml",
         "wizards/commission_register_payment_views.xml",
+        "views/res_partner_views.xml",
         "views/commission_settlement_views.xml",
         "views/commission_payment_dashboard.xml",
         "report/commission_payment_report.xml",

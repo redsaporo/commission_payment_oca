@@ -576,3 +576,18 @@ msgstr "Total Liquidación"
 #: model:ir.sequence,name:commission_payment_oca.seq_commission_payment
 msgid "Commission Payment"
 msgstr "Pago de Comisión"
+
+#. module: commission_payment_oca
+#: code:addons/commission_payment_oca/models/res_partner.py:0
+msgid "Commission Payments"
+msgstr "Pagos de Comisión"
+
+#. module: commission_payment_oca
+#: model:ir.model.fields,field_description:commission_payment_oca.field_res_partner__commission_payment_count
+msgid "Commission Payments"
+msgstr "Pagos de Comisión"
+
+#. module: commission_payment_oca
+#: model_terms:ir.ui.view,arch_db:commission_payment_oca.view_partner_form_commission_payments
+msgid "Payments"
+msgstr "Pagos"
