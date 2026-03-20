@@ -14,7 +14,7 @@ class ResPartner(models.Model):
     )
     commission_payment_count = fields.Integer(
         compute="_compute_commission_payment_count",
-        string="Commission Payments",
+        string="Nº Payments",
     )
     commission_payment_total = fields.Float(
         compute="_compute_commission_payment_count",
