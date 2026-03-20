@@ -217,10 +217,9 @@ class CommissionSettlementPaymentDetail(models.Model):
         related="settlement_id.date_to",
         string="Period To",
     )
-    settlement_total = fields.Monetary(
+    settlement_total = fields.Float(
         related="settlement_id.total",
         string="Settlement Total",
-        currency_field="currency_id",
     )
     payment_date = fields.Date(
         related="payment_id.date",
@@ -315,11 +314,10 @@ class CommissionSettlementPayment(models.Model):
         store=True,
         string="Settlements",
     )
-    settlement_total = fields.Monetary(
+    settlement_total = fields.Float(
         compute="_compute_settlement_info",
         store=True,
         string="Commission Total",
-        currency_field="currency_id",
     )
     date_from = fields.Date(
         compute="_compute_settlement_info",
