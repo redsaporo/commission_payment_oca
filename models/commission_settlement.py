@@ -353,7 +353,7 @@ class CommissionSettlementPayment(models.Model):
         store=True,
     )
     source_partner_names = fields.Char(
-        string="Customers",
+        string="Customer Names",
         compute="_compute_source_invoices",
         store=True,
     )
