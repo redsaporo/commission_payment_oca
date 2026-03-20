@@ -5,6 +5,7 @@
         <field name="model">commission.register.payment</field>
         <field name="arch" type="xml">
             <form string="Register Commission Payment">
+                <field name="currency_id" invisible="1" />
                 <group>
                     <group>
                         <field name="payment_date" />
@@ -16,6 +17,8 @@
                         <field name="settlement_count" />
                         <field name="total_pending" widget="monetary" />
                         <field name="notes" placeholder="Optional notes..." />
+                        <field name="payroll_ref" placeholder="NOM-2026-03..." />
+                        <field name="payroll_period" placeholder="2026-03" />
                     </group>
                 </group>
                 <separator string="Settlements to pay" />

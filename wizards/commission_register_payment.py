@@ -44,6 +44,14 @@ class CommissionRegisterPayment(models.TransientModel):
     notes = fields.Text(
         string="Notes",
     )
+    payroll_ref = fields.Char(
+        string="Payroll Reference",
+        help="Reference to the payslip or payroll batch",
+    )
+    payroll_period = fields.Char(
+        string="Payroll Period",
+        help="e.g., 2026-03, NOM-2026-Q1",
+    )
     pay_mode = fields.Selection(
         selection=[
             ("full", "Pay full pending amount"),
@@ -53,11 +61,18 @@ class CommissionRegisterPayment(models.TransientModel):
         default="full",
         required=True,
     )
-    custom_amount = fields.Float(
-        string="Custom Amount",
+    currency_id = fields.Many2one(
+        comodel_name="res.currency",
+        string="Currency",
+        compute="_compute_summary",
     )
-    total_pending = fields.Float(
+    custom_amount = fields.Monetary(
+        string="Custom Amount",
+        currency_field="currency_id",
+    )
+    total_pending = fields.Monetary(
         string="Total Pending",
+        currency_field="currency_id",
         compute="_compute_summary",
     )
     settlement_count = fields.Integer(
@@ -71,6 +86,10 @@ class CommissionRegisterPayment(models.TransientModel):
                 wiz.settlement_ids.mapped("amount_residual")
             )
             wiz.settlement_count = len(wiz.settlement_ids)
+            wiz.currency_id = (
+                wiz.settlement_ids[:1].currency_id
+                or wiz.env.company.currency_id
+            )
 
     def button_register(self):
         self.ensure_one()
@@ -88,16 +107,29 @@ class CommissionRegisterPayment(models.TransientModel):
             if amount <= 0:
                 continue
 
+            if self.pay_mode == "custom" and amount > settlement.amount_residual:
+                raise exceptions.UserError(
+                    _(
+                        "Custom amount (%(amount)s) exceeds pending "
+                        "(%(residual)s) for %(name)s.",
+                        amount=f"{amount:.2f}",
+                        residual=f"{settlement.amount_residual:.2f}",
+                        name=settlement.display_name,
+                    )
+                )
+
             payment_obj.create({
                 "settlement_id": settlement.id,
                 "date": self.payment_date,
                 "amount": amount,
                 "reference": self.reference or False,
                 "notes": self.notes or False,
+                "payroll_ref": self.payroll_ref or False,
+                "payroll_period": self.payroll_period or False,
             })
 
-            # Recompute
-            settlement._compute_payment_amounts()
+            # Flush to trigger stored computed field recomputation
+            settlement.flush_recordset()
 
             if settlement.is_fully_paid:
                 settlement.write({

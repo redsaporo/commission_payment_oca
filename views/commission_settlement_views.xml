@@ -83,6 +83,7 @@
                             <field name="reference" />
                             <field name="source_invoice_names" string="Source Invoices" />
                             <field name="source_partner_names" string="Customers" />
+                            <field name="payroll_ref" optional="show" />
                             <field name="notes" optional="hide" />
                             <field name="currency_id" column_invisible="1" />
                             <button name="action_view_source_invoices" type="object"
@@ -121,6 +122,8 @@
                 <separator />
             </separator>
             <xpath expr="//group/filter[@name='group_date']" position="after">
+                <filter string="Agent" name="group_agent"
+                    context="{'group_by': 'agent_id'}" />
                 <filter string="Payment Date" name="group_payment_date"
                     context="{'group_by': 'payment_date:month'}" />
             </xpath>
@@ -147,6 +150,8 @@
                 <field name="reference" />
                 <field name="source_invoice_names" string="Source Invoices" />
                 <field name="source_partner_names" string="Customers" />
+                <field name="payroll_ref" optional="show" />
+                <field name="payroll_period" optional="hide" />
                 <field name="notes" optional="hide" />
                 <field name="currency_id" column_invisible="1" />
                 <button name="action_view_source_invoices" type="object"
@@ -176,6 +181,8 @@
                             options="{'currency_field': 'currency_id'}" />
                         <field name="source_invoice_names" />
                         <field name="source_partner_names" />
+                        <field name="payroll_ref" />
+                        <field name="payroll_period" />
                     </group>
                 </group>
                 <group>
@@ -205,6 +212,7 @@
                 <field name="date" />
                 <field name="source_partner_names" string="Customer" />
                 <field name="source_invoice_names" string="Invoice" />
+                <field name="payroll_ref" />
                 <group expand="1" string="Group By">
                     <filter string="Agent" name="group_agent"
                         context="{'group_by': 'agent_id'}" />
