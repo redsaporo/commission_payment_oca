@@ -150,7 +150,7 @@
                 <field name="notes" optional="hide" />
                 <field name="currency_id" column_invisible="1" />
                 <button name="action_view_source_invoices" type="object"
-                    string="" icon="fa-external-link" class="oe_link" />
+                    title="View Invoices" icon="fa-external-link" class="oe_link" />
             </list>
         </field>
     </record>

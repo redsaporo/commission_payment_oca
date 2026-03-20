@@ -361,7 +361,7 @@ msgid "Currency"
 msgstr "Moneda"
 
 #. module: commission_payment_oca
-#: model:commission.settlement.payment.detail,constraint:amount_positive
+#: model:ir.model.constraint,message:commission_payment_oca.constraint_commission_settlement_payment_detail_amount_positive
 msgid "Detail amount must be positive."
 msgstr "El importe del detalle debe ser positivo."
 
