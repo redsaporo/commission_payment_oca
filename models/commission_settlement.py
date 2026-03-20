@@ -34,13 +34,15 @@ class CommissionSettlement(models.Model):
     )
 
     # ── Computed amounts ──────────────────────────────────────────
-    amount_paid = fields.Float(
+    amount_paid = fields.Monetary(
         string="Amount Paid",
+        currency_field="currency_id",
         compute="_compute_payment_amounts",
         store=True,
     )
-    amount_residual = fields.Float(
+    amount_residual = fields.Monetary(
         string="Amount Pending",
+        currency_field="currency_id",
         compute="_compute_payment_amounts",
         store=True,
     )
@@ -135,6 +137,10 @@ class CommissionSettlementPayment(models.Model):
     _name = "commission.settlement.payment"
     _description = "Commission Settlement Payment Record"
     _order = "date desc, id desc"
+    _sql_constraints = [
+        ("amount_positive", "CHECK(amount > 0)",
+         "Payment amount must be positive."),
+    ]
 
     settlement_id = fields.Many2one(
         comodel_name="commission.settlement",
@@ -154,8 +160,9 @@ class CommissionSettlementPayment(models.Model):
         required=True,
         default=fields.Date.context_today,
     )
-    amount = fields.Float(
+    amount = fields.Monetary(
         string="Amount Paid",
+        currency_field="currency_id",
         required=True,
     )
     currency_id = fields.Many2one(
@@ -167,6 +174,14 @@ class CommissionSettlementPayment(models.Model):
     )
     notes = fields.Text(
         string="Notes",
+    )
+    payroll_ref = fields.Char(
+        string="Payroll Reference",
+        help="Reference to the payslip or payroll batch",
+    )
+    payroll_period = fields.Char(
+        string="Payroll Period",
+        help="e.g., 2026-03, NOM-2026-Q1",
     )
     company_id = fields.Many2one(
         related="settlement_id.company_id",
@@ -225,14 +240,14 @@ class CommissionSettlementPayment(models.Model):
             partners = self.env["res.partner"]
             for line in rec.settlement_id.line_ids:
                 # Chain: settlement_line → invoice_agent_line_id → object_id → move_id
-                if hasattr(line, "invoice_agent_line_id") and line.invoice_agent_line_id:
+                if line.invoice_agent_line_id:
                     inv = line.invoice_agent_line_id.invoice_id
                     if inv:
                         invoices |= inv
                         if inv.partner_id:
                             partners |= inv.partner_id
                 # Fallback: invoice_line_id → move_id
-                elif hasattr(line, "invoice_line_id") and line.invoice_line_id:
+                elif line.invoice_line_id:
                     inv = line.invoice_line_id.move_id
                     if inv:
                         invoices |= inv

@@ -5,29 +5,29 @@
             <t t-foreach="docs" t-as="s">
                 <t t-call="web.external_layout">
                     <div class="page">
-                        <h2 class="text-center mb-4">Resumen de Pago de Comisiones</h2>
+                        <h2 class="text-center mb-4">Commission Payment Summary</h2>
                         <div class="row mb-4">
                             <div class="col-6">
                                 <table class="table table-sm table-borderless">
                                     <tr>
-                                        <td class="fw-bold" style="width:40%">Agente:</td>
+                                        <td class="fw-bold" style="width:40%">Agent:</td>
                                         <td><t t-esc="s.agent_id.name" /></td>
                                     </tr>
                                     <tr>
-                                        <td class="fw-bold">Período:</td>
+                                        <td class="fw-bold">Period:</td>
                                         <td>
                                             <t t-esc="s.date_from" t-options='{"widget": "date"}' />
-                                            a
+                                            to
                                             <t t-esc="s.date_to" t-options='{"widget": "date"}' />
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td class="fw-bold">Estado:</td>
+                                        <td class="fw-bold">Status:</td>
                                         <td>
-                                            <span t-if="s.state == 'paid'" class="badge bg-success">PAGADO</span>
-                                            <span t-elif="s.state == 'invoiced'" class="badge bg-info">Facturado</span>
-                                            <span t-elif="s.state == 'settled'" class="badge bg-warning">Liquidado</span>
-                                            <span t-else="" class="badge bg-secondary">Cancelado</span>
+                                            <span t-if="s.state == 'paid'" class="badge bg-success">PAID</span>
+                                            <span t-elif="s.state == 'invoiced'" class="badge bg-info">Invoiced</span>
+                                            <span t-elif="s.state == 'settled'" class="badge bg-warning">Settled</span>
+                                            <span t-else="" class="badge bg-secondary">Cancelled</span>
                                         </td>
                                     </tr>
                                 </table>
@@ -35,21 +35,21 @@
                             <div class="col-6">
                                 <table class="table table-sm table-borderless">
                                     <tr>
-                                        <td class="fw-bold" style="width:40%">Comisión Total:</td>
+                                        <td class="fw-bold" style="width:40%">Total Commission:</td>
                                         <td>
                                             <t t-esc="s.total"
                                                t-options='{"widget": "monetary", "display_currency": s.currency_id}' />
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td class="fw-bold">Pagado:</td>
+                                        <td class="fw-bold">Paid:</td>
                                         <td class="text-success">
                                             <t t-esc="s.amount_paid"
                                                t-options='{"widget": "monetary", "display_currency": s.currency_id}' />
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td class="fw-bold">Pendiente:</td>
+                                        <td class="fw-bold">Pending:</td>
                                         <td t-attf-class="#{'text-danger fw-bold' if s.amount_residual > 0 else ''}">
                                             <t t-esc="s.amount_residual"
                                                t-options='{"widget": "monetary", "display_currency": s.currency_id}' />
@@ -59,15 +59,15 @@
                             </div>
                         </div>
 
-                        <h5>Líneas de Comisión</h5>
+                        <h5>Commission Lines</h5>
                         <table class="table table-sm">
                             <thead>
                                 <tr>
-                                    <th>Fecha</th>
-                                    <th>Comisión</th>
-                                    <th>Factura Origen</th>
-                                    <th>Cliente</th>
-                                    <th class="text-end">Importe</th>
+                                    <th>Date</th>
+                                    <th>Commission</th>
+                                    <th>Source Invoice</th>
+                                    <th>Customer</th>
+                                    <th class="text-end">Amount</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -76,13 +76,19 @@
                                         <td><t t-esc="line.date" t-options='{"widget": "date"}' /></td>
                                         <td><t t-esc="line.commission_id.name" /></td>
                                         <td>
-                                            <t t-if="hasattr(line, 'invoice_agent_line_id') and line.invoice_agent_line_id and line.invoice_agent_line_id.invoice_id">
+                                            <t t-if="line.invoice_agent_line_id and line.invoice_agent_line_id.invoice_id">
                                                 <t t-esc="line.invoice_agent_line_id.invoice_id.name" />
+                                            </t>
+                                            <t t-elif="line.invoice_line_id and line.invoice_line_id.move_id">
+                                                <t t-esc="line.invoice_line_id.move_id.name" />
                                             </t>
                                         </td>
                                         <td>
-                                            <t t-if="hasattr(line, 'invoice_agent_line_id') and line.invoice_agent_line_id and line.invoice_agent_line_id.invoice_id">
+                                            <t t-if="line.invoice_agent_line_id and line.invoice_agent_line_id.invoice_id">
                                                 <t t-esc="line.invoice_agent_line_id.invoice_id.partner_id.name" />
+                                            </t>
+                                            <t t-elif="line.invoice_line_id and line.invoice_line_id.move_id">
+                                                <t t-esc="line.invoice_line_id.move_id.partner_id.name" />
                                             </t>
                                         </td>
                                         <td class="text-end">
@@ -104,14 +110,14 @@
                         </table>
 
                         <t t-if="s.payment_line_ids">
-                            <h5 class="mt-4">Registros de Pago</h5>
+                            <h5 class="mt-4">Payment Records</h5>
                             <table class="table table-sm">
                                 <thead>
                                     <tr>
-                                        <th>Fecha</th>
-                                        <th>Referencia</th>
-                                        <th class="text-end">Importe</th>
-                                        <th>Notas</th>
+                                        <th>Date</th>
+                                        <th>Reference</th>
+                                        <th class="text-end">Amount</th>
+                                        <th>Notes</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -129,7 +135,7 @@
                                 </tbody>
                                 <tfoot>
                                     <tr class="fw-bold border-top text-success">
-                                        <td colspan="2">Total Pagado</td>
+                                        <td colspan="2">Total Paid</td>
                                         <td class="text-end">
                                             <t t-esc="s.amount_paid"
                                                t-options='{"widget": "monetary", "display_currency": s.currency_id}' />
