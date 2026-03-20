@@ -321,6 +321,19 @@ class TestCommissionPayment(TransactionCase):
         self.assertEqual(payment.detail_ids.settlement_id, settlement2)
         self.assertEqual(payment.amount, 300.0)
 
+    def test_delete_payment_reverts_settlements(self):
+        """Deleting a payment directly should revert settlements to settled."""
+        wiz = self._create_wizard()
+        wiz.button_register()
+        self.assertEqual(self.settlement.state, "paid")
+        payment = self.settlement.payment_detail_ids[0].payment_id
+        # Delete the payment record directly
+        payment.unlink()
+        self.assertEqual(self.settlement.state, "settled")
+        self.assertFalse(self.settlement.payment_date)
+        self.assertFalse(self.settlement.payment_ref)
+        self.assertEqual(self.settlement.payment_count, 0)
+
     def test_report_renders(self):
         """PDF report should render without errors."""
         report = self.env.ref(

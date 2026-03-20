@@ -416,6 +416,28 @@ class CommissionSettlementPayment(models.Model):
                 )
         return super().create(vals_list)
 
+    def unlink(self):
+        """Revert linked settlements back to settled when payment is deleted."""
+        settlements = self.mapped("detail_ids.settlement_id").filtered(
+            lambda s: s.state == "paid"
+        )
+        res = super().unlink()
+        # After deleting the payment (and cascade-deleted details),
+        # revert settlements that are no longer fully paid
+        for settlement in settlements:
+            settlement.flush_recordset()
+            if not settlement.is_fully_paid:
+                settlement.write({
+                    "state": "settled",
+                    "payment_date": False,
+                    "payment_ref": False,
+                    "payment_notes": False,
+                })
+                settlement.message_post(
+                    body=_("Payment deleted. Settlement returned to settled."),
+                )
+        return res
+
     # ── Actions ───────────────────────────────────────────────────
 
     def action_view_source_invoices(self):

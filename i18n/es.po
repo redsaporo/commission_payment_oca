@@ -327,6 +327,11 @@ msgstr "No puedes eliminar liquidaciones pagadas."
 
 #. module: commission_payment_oca
 #: code:addons/commission_payment_oca/models/commission_settlement.py:0
+msgid "Payment deleted. Settlement returned to settled."
+msgstr "Pago eliminado. La liquidación ha vuelto al estado liquidado."
+
+#. module: commission_payment_oca
+#: code:addons/commission_payment_oca/models/commission_settlement.py:0
 msgid "No source invoices found."
 msgstr "No se encontraron facturas origen."
 
