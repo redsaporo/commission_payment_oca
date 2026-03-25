@@ -4,103 +4,192 @@
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="s">
                 <t t-call="web.external_layout">
-                    <div class="page">
-                        <h2 class="text-center mb-4">Commission Payment Summary</h2>
-                        <div class="row mb-4">
-                            <div class="col-6">
-                                <table class="table table-sm table-borderless">
-                                    <tr>
-                                        <td class="fw-bold" style="width:40%">Agent:</td>
-                                        <td><t t-esc="s.agent_id.name" /></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="fw-bold">Period:</td>
-                                        <td>
-                                            <t t-esc="s.date_from" t-options='{"widget": "date"}' />
-                                            to
-                                            <t t-esc="s.date_to" t-options='{"widget": "date"}' />
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td class="fw-bold">Status:</td>
-                                        <td>
-                                            <span t-if="s.state == 'paid'" class="badge bg-success">PAID</span>
-                                            <span t-elif="s.state == 'invoiced'" class="badge bg-info">Invoiced</span>
-                                            <span t-elif="s.state == 'settled'" class="badge bg-warning">Settled</span>
-                                            <span t-else="" class="badge bg-secondary">Cancelled</span>
-                                        </td>
-                                    </tr>
-                                </table>
+                    <div class="page" style="font-size: 11px;">
+
+                        <!-- ════════════════════════════════════════════ -->
+                        <!-- HEADER                                      -->
+                        <!-- ════════════════════════════════════════════ -->
+                        <div class="text-center mb-3">
+                            <h2 style="color: #2c3e50; margin-bottom: 2px;">Commission Settlement Report</h2>
+                            <hr style="border-top: 3px solid #3498db; width: 60%; margin: 8px auto;" />
+                        </div>
+
+                        <!-- ════════════════════════════════════════════ -->
+                        <!-- INFO CARDS                                  -->
+                        <!-- ════════════════════════════════════════════ -->
+                        <div class="row mb-3">
+                            <div class="col-7">
+                                <div style="background: #f8f9fa; border-left: 4px solid #3498db; padding: 10px 14px; border-radius: 4px;">
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <small class="text-muted d-block">Agent</small>
+                                            <strong style="font-size: 13px;"><t t-esc="s.agent_id.name" /></strong>
+                                        </div>
+                                        <div class="col-6">
+                                            <small class="text-muted d-block">Period</small>
+                                            <strong>
+                                                <t t-esc="s.date_from" t-options='{"widget": "date"}' />
+                                                <span class="text-muted mx-1">-</span>
+                                                <t t-esc="s.date_to" t-options='{"widget": "date"}' />
+                                            </strong>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="col-6">
-                                <table class="table table-sm table-borderless">
-                                    <tr>
-                                        <td class="fw-bold" style="width:40%">Total Commission:</td>
-                                        <td>
-                                            <t t-esc="s.total"
-                                               t-options='{"widget": "monetary", "display_currency": s.currency_id}' />
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td class="fw-bold">Paid:</td>
-                                        <td class="text-success">
-                                            <t t-esc="s.amount_paid"
-                                               t-options='{"widget": "monetary", "display_currency": s.currency_id}' />
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td class="fw-bold">Pending:</td>
-                                        <td t-attf-class="#{'text-danger fw-bold' if s.amount_residual > 0 else ''}">
-                                            <t t-esc="s.amount_residual"
-                                               t-options='{"widget": "monetary", "display_currency": s.currency_id}' />
-                                        </td>
-                                    </tr>
-                                </table>
+                            <div class="col-5">
+                                <div style="background: #f8f9fa; border-left: 4px solid #27ae60; padding: 10px 14px; border-radius: 4px;">
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <small class="text-muted d-block">Status</small>
+                                            <span t-if="s.state == 'paid'" class="badge" style="background: #27ae60;">PAID</span>
+                                            <span t-elif="s.state == 'invoiced'" class="badge" style="background: #2980b9;">Invoiced</span>
+                                            <span t-elif="s.state == 'settled'" class="badge" style="background: #f39c12;">Settled</span>
+                                            <span t-else="" class="badge" style="background: #95a5a6;">Cancelled</span>
+                                        </div>
+                                        <div class="col-6 text-end">
+                                            <small class="text-muted d-block">Commission Total</small>
+                                            <strong style="font-size: 14px; color: #2c3e50;">
+                                                <t t-esc="s.total"
+                                                   t-options='{"widget": "monetary", "display_currency": s.currency_id}' />
+                                            </strong>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <h5>Commission Lines</h5>
-                        <table class="table table-sm">
+                        <!-- Payment summary bar (only if payments exist) -->
+                        <t t-if="s.amount_paid > 0">
+                            <div class="row mb-3">
+                                <div class="col-12">
+                                    <div style="background: #eafaf1; border: 1px solid #d5f5e3; padding: 8px 14px; border-radius: 4px;">
+                                        <div class="row">
+                                            <div class="col-4">
+                                                <small class="text-muted">Total Commission</small>
+                                                <div class="fw-bold">
+                                                    <t t-esc="s.total"
+                                                       t-options='{"widget": "monetary", "display_currency": s.currency_id}' />
+                                                </div>
+                                            </div>
+                                            <div class="col-4 text-center">
+                                                <small style="color: #27ae60;">Paid</small>
+                                                <div class="fw-bold" style="color: #27ae60;">
+                                                    <t t-esc="s.amount_paid"
+                                                       t-options='{"widget": "monetary", "display_currency": s.currency_id}' />
+                                                </div>
+                                            </div>
+                                            <div class="col-4 text-end">
+                                                <small t-attf-style="color: #{'#e74c3c' if s.amount_residual > 0 else '#27ae60'};">Pending</small>
+                                                <div class="fw-bold" t-attf-style="color: #{'#e74c3c' if s.amount_residual > 0 else '#27ae60'};">
+                                                    <t t-esc="s.amount_residual"
+                                                       t-options='{"widget": "monetary", "display_currency": s.currency_id}' />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+
+                        <!-- ════════════════════════════════════════════ -->
+                        <!-- COMMISSION LINES TABLE                      -->
+                        <!-- ════════════════════════════════════════════ -->
+                        <h5 style="color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 4px;">
+                            Commission Detail
+                        </h5>
+                        <table class="table table-sm" style="font-size: 10px;">
                             <thead>
-                                <tr>
+                                <tr style="background: #2c3e50; color: white;">
+                                    <th>Invoice</th>
                                     <th>Date</th>
-                                    <th>Commission</th>
-                                    <th>Source Invoice</th>
                                     <th>Customer</th>
-                                    <th class="text-end">Amount</th>
+                                    <th>Product / Service</th>
+                                    <th class="text-end">Invoice Total</th>
+                                    <th class="text-end">Comm. Base</th>
+                                    <th class="text-center">Type</th>
+                                    <th class="text-center">%</th>
+                                    <th class="text-end">Commission</th>
+                                    <th class="text-center">Inv. Status</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <t t-foreach="s.line_ids" t-as="line">
                                     <tr>
-                                        <td><t t-esc="line.date" t-options='{"widget": "date"}' /></td>
-                                        <td><t t-esc="line.commission_id.name" /></td>
-                                        <td><t t-esc="line.source_invoice_id.name" /></td>
-                                        <td><t t-esc="line.source_partner_id.name" /></td>
+                                        <td>
+                                            <strong><t t-esc="line.source_invoice_id.name or '-'" /></strong>
+                                        </td>
+                                        <td>
+                                            <t t-esc="line.source_invoice_date" t-options='{"widget": "date"}' />
+                                        </td>
+                                        <td><t t-esc="line.source_partner_id.name or '-'" /></td>
+                                        <td>
+                                            <small><t t-esc="line.source_product_name or '-'" /></small>
+                                        </td>
                                         <td class="text-end">
+                                            <t t-if="line.source_invoice_amount">
+                                                <t t-esc="line.source_invoice_amount"
+                                                   t-options='{"widget": "monetary", "display_currency": s.currency_id}' />
+                                            </t>
+                                        </td>
+                                        <td class="text-end">
+                                            <t t-if="line.source_invoice_line_amount">
+                                                <t t-esc="line.source_invoice_line_amount"
+                                                   t-options='{"widget": "monetary", "display_currency": s.currency_id}' />
+                                            </t>
+                                        </td>
+                                        <td class="text-center">
+                                            <small>
+                                                <t t-if="line.commission_type == 'fixed'">Fixed</t>
+                                                <t t-elif="line.commission_type == 'section'">Section</t>
+                                            </small>
+                                        </td>
+                                        <td class="text-center">
+                                            <t t-if="line.commission_percent">
+                                                <t t-esc="'%.2f' % line.commission_percent" />%
+                                            </t>
+                                        </td>
+                                        <td class="text-end fw-bold">
                                             <t t-esc="line.settled_amount"
                                                t-options='{"widget": "monetary", "display_currency": s.currency_id}' />
+                                        </td>
+                                        <td class="text-center">
+                                            <span t-if="line.source_invoice_payment_state == 'paid'"
+                                                  class="badge" style="background: #27ae60; font-size: 9px;">Paid</span>
+                                            <span t-elif="line.source_invoice_payment_state == 'in_payment'"
+                                                  class="badge" style="background: #2980b9; font-size: 9px;">In Payment</span>
+                                            <span t-elif="line.source_invoice_payment_state == 'partial'"
+                                                  class="badge" style="background: #f39c12; font-size: 9px;">Partial</span>
+                                            <span t-elif="line.source_invoice_payment_state == 'not_paid'"
+                                                  class="badge" style="background: #e74c3c; font-size: 9px;">Not Paid</span>
                                         </td>
                                     </tr>
                                 </t>
                             </tbody>
                             <tfoot>
-                                <tr class="fw-bold border-top">
-                                    <td colspan="4">Total</td>
-                                    <td class="text-end">
+                                <tr style="background: #ecf0f1; font-weight: bold;">
+                                    <td colspan="8" class="text-end" style="border-top: 2px solid #2c3e50;">
+                                        TOTAL COMMISSION
+                                    </td>
+                                    <td class="text-end" style="border-top: 2px solid #2c3e50; color: #2c3e50; font-size: 12px;">
                                         <t t-esc="s.total"
                                            t-options='{"widget": "monetary", "display_currency": s.currency_id}' />
                                     </td>
+                                    <td style="border-top: 2px solid #2c3e50;" />
                                 </tr>
                             </tfoot>
                         </table>
 
+                        <!-- ════════════════════════════════════════════ -->
+                        <!-- PAYMENT RECORDS TABLE                       -->
+                        <!-- ════════════════════════════════════════════ -->
                         <t t-if="s.payment_detail_ids">
-                            <h5 class="mt-4">Payment Records</h5>
-                            <table class="table table-sm">
+                            <h5 class="mt-4" style="color: #2c3e50; border-bottom: 2px solid #27ae60; padding-bottom: 4px;">
+                                Payment Records
+                            </h5>
+                            <table class="table table-sm" style="font-size: 10px;">
                                 <thead>
-                                    <tr>
-                                        <th>Number</th>
+                                    <tr style="background: #27ae60; color: white;">
+                                        <th>Payment Nº</th>
                                         <th>Date</th>
                                         <th>Reference</th>
                                         <th class="text-end">Amount</th>
@@ -109,10 +198,10 @@
                                 <tbody>
                                     <t t-foreach="s.payment_detail_ids" t-as="d">
                                         <tr>
-                                            <td><t t-esc="d.payment_id.name" /></td>
+                                            <td><strong><t t-esc="d.payment_id.name" /></strong></td>
                                             <td><t t-esc="d.payment_id.date" t-options='{"widget": "date"}' /></td>
                                             <td><t t-esc="d.payment_id.reference or '-'" /></td>
-                                            <td class="text-end">
+                                            <td class="text-end fw-bold">
                                                 <t t-esc="d.amount"
                                                    t-options='{"widget": "monetary", "display_currency": s.currency_id}' />
                                             </td>
@@ -120,9 +209,11 @@
                                     </t>
                                 </tbody>
                                 <tfoot>
-                                    <tr class="fw-bold border-top text-success">
-                                        <td colspan="3">Total Paid</td>
-                                        <td class="text-end">
+                                    <tr style="background: #eafaf1; font-weight: bold;">
+                                        <td colspan="3" class="text-end" style="border-top: 2px solid #27ae60;">
+                                            TOTAL PAID
+                                        </td>
+                                        <td class="text-end" style="border-top: 2px solid #27ae60; color: #27ae60; font-size: 12px;">
                                             <t t-esc="s.amount_paid"
                                                t-options='{"widget": "monetary", "display_currency": s.currency_id}' />
                                         </td>
@@ -130,6 +221,7 @@
                                 </tfoot>
                             </table>
                         </t>
+
                     </div>
                 </t>
             </t>

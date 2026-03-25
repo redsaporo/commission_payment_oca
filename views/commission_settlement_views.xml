@@ -57,6 +57,26 @@
                     </button>
                 </div>
             </field>
+            <!-- Extend settlement line_ids tree with traceability columns -->
+            <xpath expr="//field[@name='line_ids']//list" position="inside">
+                <field name="source_invoice_id" string="Invoice" optional="show" />
+                <field name="source_partner_id" string="Customer" optional="show" />
+                <field name="source_invoice_date" string="Inv. Date" optional="show" />
+                <field name="source_invoice_line_amount" string="Base"
+                    widget="monetary" options="{'currency_field': 'currency_id'}" optional="show" />
+                <field name="commission_percent" string="%" optional="show" />
+                <field name="source_invoice_payment_state" string="Inv. Payment"
+                    widget="badge"
+                    decoration-success="source_invoice_payment_state == 'paid'"
+                    decoration-warning="source_invoice_payment_state == 'partial'"
+                    decoration-danger="source_invoice_payment_state == 'not_paid'"
+                    decoration-info="source_invoice_payment_state == 'in_payment'"
+                    optional="show" />
+                <field name="source_product_name" string="Product" optional="hide" />
+                <field name="source_invoice_amount" string="Inv. Total"
+                    widget="monetary" options="{'currency_field': 'currency_id'}" optional="hide" />
+                <field name="source_invoice_ref" string="Cust. Ref" optional="hide" />
+            </xpath>
             <xpath expr="//group[field[@name='total']]" position="after">
                 <group string="Payment Tracking"
                     invisible="payment_count == 0 and state != 'paid'">
@@ -200,6 +220,29 @@
                             </list>
                         </field>
                     </page>
+                    <page string="Commission Lines">
+                        <field name="commission_line_ids" nolabel="1">
+                            <list create="false" delete="false">
+                                <field name="source_invoice_id" string="Invoice" />
+                                <field name="source_invoice_date" string="Inv. Date" />
+                                <field name="source_partner_id" string="Customer" />
+                                <field name="source_product_name" string="Product" />
+                                <field name="source_invoice_line_amount" string="Base"
+                                    widget="monetary" options="{'currency_field': 'currency_id'}" />
+                                <field name="commission_id" string="Commission" />
+                                <field name="commission_percent" string="%" />
+                                <field name="settled_amount" string="Amount"
+                                    widget="monetary" options="{'currency_field': 'currency_id'}" />
+                                <field name="source_invoice_payment_state" string="Inv. Payment"
+                                    widget="badge"
+                                    decoration-success="source_invoice_payment_state == 'paid'"
+                                    decoration-warning="source_invoice_payment_state == 'partial'"
+                                    decoration-danger="source_invoice_payment_state == 'not_paid'"
+                                    decoration-info="source_invoice_payment_state == 'in_payment'" />
+                                <field name="currency_id" column_invisible="1" />
+                            </list>
+                        </field>
+                    </page>
                     <page string="Source Invoices">
                         <field name="source_invoice_ids" nolabel="1">
                             <list create="false" delete="false">
@@ -207,6 +250,11 @@
                                 <field name="partner_id" />
                                 <field name="invoice_date" />
                                 <field name="amount_total" />
+                                <field name="payment_state" widget="badge"
+                                    decoration-success="payment_state == 'paid'"
+                                    decoration-warning="payment_state == 'partial'"
+                                    decoration-danger="payment_state == 'not_paid'"
+                                    decoration-info="payment_state == 'in_payment'" />
                                 <field name="state" widget="badge" />
                             </list>
                         </field>

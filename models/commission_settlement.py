@@ -8,6 +8,7 @@ from odoo.exceptions import UserError
 class CommissionSettlementLine(models.Model):
     _inherit = "commission.settlement.line"
 
+    # ── Source invoice traceability ───────────────────────────────
     source_invoice_id = fields.Many2one(
         comodel_name="account.move",
         string="Source Invoice",
@@ -20,14 +21,68 @@ class CommissionSettlementLine(models.Model):
         compute="_compute_source_invoice",
         store=True,
     )
+    source_invoice_date = fields.Date(
+        string="Invoice Date",
+        compute="_compute_source_invoice",
+        store=True,
+    )
+    source_invoice_amount = fields.Monetary(
+        string="Invoice Total",
+        currency_field="currency_id",
+        compute="_compute_source_invoice",
+        store=True,
+    )
+    source_invoice_payment_state = fields.Selection(
+        string="Invoice Payment",
+        selection=[
+            ("not_paid", "Not Paid"),
+            ("in_payment", "In Payment"),
+            ("paid", "Paid"),
+            ("partial", "Partial"),
+            ("reversed", "Reversed"),
+        ],
+        compute="_compute_source_invoice",
+        store=True,
+    )
+    source_invoice_ref = fields.Char(
+        string="Customer Ref",
+        compute="_compute_source_invoice",
+        store=True,
+    )
+    source_product_name = fields.Char(
+        string="Product/Service",
+        compute="_compute_source_invoice",
+        store=True,
+    )
+    source_invoice_line_amount = fields.Monetary(
+        string="Commission Base",
+        currency_field="currency_id",
+        compute="_compute_source_invoice",
+        store=True,
+    )
+
+    # ── Commission details ────────────────────────────────────────
+    commission_type = fields.Selection(
+        related="commission_id.commission_type",
+        string="Commission Type",
+        store=True,
+    )
+    commission_percent = fields.Float(
+        string="Commission %",
+        compute="_compute_commission_percent",
+        store=True,
+    )
 
     @api.depends("invoice_agent_line_id", "invoice_line_id", "settlement_id.agent_id")
     def _compute_source_invoice(self):
         for line in self:
             inv = False
+            agent_line = False
             # Route 1: standard OCA field
-            if line.invoice_agent_line_id and line.invoice_agent_line_id.invoice_id:
-                inv = line.invoice_agent_line_id.invoice_id
+            if line.invoice_agent_line_id:
+                agent_line = line.invoice_agent_line_id
+                if agent_line.invoice_id:
+                    inv = agent_line.invoice_id
             # Route 2: related field
             elif line.invoice_line_id and line.invoice_line_id.move_id:
                 inv = line.invoice_line_id.move_id
@@ -43,8 +98,48 @@ class CommissionSettlementLine(models.Model):
                 ], limit=1)
                 if agent_line and agent_line.invoice_id:
                     inv = agent_line.invoice_id
+
             line.source_invoice_id = inv
             line.source_partner_id = inv.partner_id if inv else False
+            line.source_invoice_date = inv.invoice_date if inv else False
+            line.source_invoice_amount = inv.amount_total if inv else 0.0
+            line.source_invoice_payment_state = (
+                inv.payment_state if inv else False
+            )
+            line.source_invoice_ref = inv.ref if inv else False
+
+            # Product name and line amount from the invoice line
+            move_line = (
+                agent_line.object_id
+                if agent_line and hasattr(agent_line, "object_id")
+                else line.invoice_line_id
+            )
+            if move_line:
+                line.source_product_name = (
+                    move_line.product_id.display_name
+                    if move_line.product_id
+                    else move_line.name or ""
+                )
+                line.source_invoice_line_amount = abs(move_line.price_subtotal)
+            else:
+                line.source_product_name = False
+                line.source_invoice_line_amount = 0.0
+
+    @api.depends("settled_amount", "source_invoice_line_amount", "commission_id")
+    def _compute_commission_percent(self):
+        for line in self:
+            pct = 0.0
+            if line.commission_id:
+                if line.commission_id.commission_type == "fixed":
+                    pct = line.commission_id.fix_qty
+                elif line.source_invoice_line_amount:
+                    # Derive percentage from amounts
+                    pct = (
+                        line.settled_amount
+                        / line.source_invoice_line_amount
+                        * 100
+                    )
+            line.commission_percent = pct
 
 
 class CommissionSettlement(models.Model):
@@ -358,7 +453,20 @@ class CommissionSettlementPayment(models.Model):
         store=True,
     )
 
+    # ── All commission lines (from all linked settlements) ────────
+    commission_line_ids = fields.Many2many(
+        comodel_name="commission.settlement.line",
+        compute="_compute_commission_lines",
+        string="Commission Lines",
+    )
+
     # ── Computes ──────────────────────────────────────────────────
+
+    @api.depends("detail_ids.settlement_id")
+    def _compute_commission_lines(self):
+        for rec in self:
+            settlements = rec.detail_ids.mapped("settlement_id")
+            rec.commission_line_ids = settlements.mapped("line_ids")
 
     @api.depends("detail_ids.amount")
     def _compute_amount(self):

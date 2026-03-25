@@ -591,3 +591,143 @@ msgstr "Pagos de Comisión"
 #: model_terms:ir.ui.view,arch_db:commission_payment_oca.view_partner_form_commission_payments
 msgid "Payments"
 msgstr "Pagos"
+
+#. module: commission_payment_oca
+#: model:ir.model.fields,field_description:commission_payment_oca.field_commission_settlement_line__source_invoice_date
+msgid "Invoice Date"
+msgstr "Fecha Factura"
+
+#. module: commission_payment_oca
+#: model:ir.model.fields,field_description:commission_payment_oca.field_commission_settlement_line__source_invoice_amount
+msgid "Invoice Total"
+msgstr "Total Factura"
+
+#. module: commission_payment_oca
+#: model:ir.model.fields,field_description:commission_payment_oca.field_commission_settlement_line__source_invoice_payment_state
+msgid "Invoice Payment"
+msgstr "Estado Cobro"
+
+#. module: commission_payment_oca
+#: model:ir.model.fields,field_description:commission_payment_oca.field_commission_settlement_line__source_invoice_ref
+msgid "Customer Ref"
+msgstr "Ref. Cliente"
+
+#. module: commission_payment_oca
+#: model:ir.model.fields,field_description:commission_payment_oca.field_commission_settlement_line__source_product_name
+msgid "Product/Service"
+msgstr "Producto/Servicio"
+
+#. module: commission_payment_oca
+#: model:ir.model.fields,field_description:commission_payment_oca.field_commission_settlement_line__source_invoice_line_amount
+msgid "Commission Base"
+msgstr "Base Comisión"
+
+#. module: commission_payment_oca
+#: model:ir.model.fields,field_description:commission_payment_oca.field_commission_settlement_line__commission_type
+msgid "Commission Type"
+msgstr "Tipo Comisión"
+
+#. module: commission_payment_oca
+#: model:ir.model.fields,field_description:commission_payment_oca.field_commission_settlement_line__commission_percent
+msgid "Commission %"
+msgstr "% Comisión"
+
+#. module: commission_payment_oca
+#: model:ir.model.fields,field_description:commission_payment_oca.field_commission_settlement_payment__commission_line_ids
+msgid "Commission Lines"
+msgstr "Líneas de Comisión"
+
+#. module: commission_payment_oca
+#: model_terms:ir.ui.view,arch_db:commission_payment_oca.view_settlement_payment_form
+msgid "Commission Lines"
+msgstr "Líneas de Comisión"
+
+#. module: commission_payment_oca
+#: model_terms:ir.ui.view,arch_db:commission_payment_oca.report_commission_payment
+msgid "Commission Settlement Report"
+msgstr "Informe de Liquidación de Comisiones"
+
+#. module: commission_payment_oca
+#: model_terms:ir.ui.view,arch_db:commission_payment_oca.report_commission_payment
+msgid "Commission Detail"
+msgstr "Detalle de Comisiones"
+
+#. module: commission_payment_oca
+#: model_terms:ir.ui.view,arch_db:commission_payment_oca.report_commission_payment
+msgid "TOTAL COMMISSION"
+msgstr "TOTAL COMISIONES"
+
+#. module: commission_payment_oca
+#: model_terms:ir.ui.view,arch_db:commission_payment_oca.report_commission_payment
+msgid "TOTAL PAID"
+msgstr "TOTAL PAGADO"
+
+#. module: commission_payment_oca
+#: model_terms:ir.ui.view,arch_db:commission_payment_oca.report_commission_payment
+msgid "Product / Service"
+msgstr "Producto / Servicio"
+
+#. module: commission_payment_oca
+#: model_terms:ir.ui.view,arch_db:commission_payment_oca.report_commission_payment
+msgid "Invoice Total"
+msgstr "Total Factura"
+
+#. module: commission_payment_oca
+#: model_terms:ir.ui.view,arch_db:commission_payment_oca.report_commission_payment
+msgid "Comm. Base"
+msgstr "Base Com."
+
+#. module: commission_payment_oca
+#: model_terms:ir.ui.view,arch_db:commission_payment_oca.report_commission_payment
+msgid "Type"
+msgstr "Tipo"
+
+#. module: commission_payment_oca
+#: model_terms:ir.ui.view,arch_db:commission_payment_oca.report_commission_payment
+msgid "Inv. Status"
+msgstr "Estado Cobro"
+
+#. module: commission_payment_oca
+#: model_terms:ir.ui.view,arch_db:commission_payment_oca.report_commission_payment
+msgid "Fixed"
+msgstr "Fijo"
+
+#. module: commission_payment_oca
+#: model_terms:ir.ui.view,arch_db:commission_payment_oca.report_commission_payment
+msgid "Section"
+msgstr "Tramos"
+
+#. module: commission_payment_oca
+#: model_terms:ir.ui.view,arch_db:commission_payment_oca.report_commission_payment
+msgid "In Payment"
+msgstr "En Pago"
+
+#. module: commission_payment_oca
+#: model_terms:ir.ui.view,arch_db:commission_payment_oca.report_commission_payment
+msgid "Partial"
+msgstr "Parcial"
+
+#. module: commission_payment_oca
+#: model_terms:ir.ui.view,arch_db:commission_payment_oca.report_commission_payment
+msgid "Not Paid"
+msgstr "No Pagado"
+
+#. module: commission_payment_oca
+#: model:ir.model.fields.selection
+msgid "not_paid"
+msgstr "No Pagado"
+
+#. module: commission_payment_oca
+#: model:ir.model.fields.selection
+msgid "in_payment"
+msgstr "En Pago"
+
+#. module: commission_payment_oca
+#: model:ir.model.fields.selection
+msgid "partial"
+msgstr "Parcial"
+
+#. module: commission_payment_oca
+#: model:ir.model.fields.selection
+msgid "reversed"
+msgstr "Revertido"
